@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExpensePeriodController;
 use App\Http\Controllers\ExpenseEntryController;
 use App\Http\Controllers\GrossSalesController;
@@ -9,7 +10,7 @@ use App\Http\Controllers\SalesEntryController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/expense-periods');
+Route::redirect('/', '/dashboard');
 
 // Auth routes (Laravel Breeze / manual)
 Route::middleware('guest')->group(function () {
@@ -21,6 +22,9 @@ Route::post('/logout', [App\Http\Controllers\Auth\AuthenticatedSessionController
     ->name('logout');
 
 Route::middleware(['auth'])->group(function () {
+
+    // Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Expense Periods
     Route::resource('expense-periods', ExpensePeriodController::class);

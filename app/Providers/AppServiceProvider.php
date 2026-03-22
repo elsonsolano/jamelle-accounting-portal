@@ -29,6 +29,6 @@ class AppServiceProvider extends ServiceProvider
 
         // Send already-authenticated users directly to the main page,
         // bypassing the / → /expense-periods intermediate redirect hop.
-        RedirectIfAuthenticated::redirectUsing(fn () => route('expense-periods.index'));
+        RedirectIfAuthenticated::redirectUsing(fn () => route('dashboard'));
     }
 }

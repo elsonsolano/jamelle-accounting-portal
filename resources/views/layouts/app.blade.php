@@ -19,6 +19,7 @@
                 <img src="{{ asset('images/logo.png') }}" alt="Jamelle 1122 Corporation" class="h-12">
             </a>
             <div class="flex items-center gap-6 text-sm font-medium text-gray-600">
+                <a href="{{ route('dashboard') }}" class="hover:text-indigo-600">Dashboard</a>
                 <a href="{{ route('expense-periods.index') }}" class="hover:text-indigo-600">Periods</a>
                 <a href="{{ route('reports.consolidated') }}" class="hover:text-indigo-600">Consolidated</a>
                 @can('manage users')

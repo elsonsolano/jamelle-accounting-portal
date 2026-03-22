@@ -17,7 +17,7 @@ class AuthenticatedSessionController extends Controller
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
-            return redirect()->route('expense-periods.index');
+            return redirect()->route('dashboard');
         }
 
         return back()->withErrors(['email' => 'These credentials do not match our records.'])->onlyInput('email');
