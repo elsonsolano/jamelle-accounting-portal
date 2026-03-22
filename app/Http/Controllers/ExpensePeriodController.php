@@ -6,6 +6,7 @@ use App\Models\Branch;
 use App\Models\ExpenseCategory;
 use App\Models\ExpensePeriod;
 use App\Models\GrossSales;
+use App\Models\SalesEntry;
 use App\Http\Requests\StoreExpensePeriodRequest;
 use App\Http\Requests\UpdateExpensePeriodRequest;
 
@@ -13,7 +14,10 @@ class ExpensePeriodController extends Controller
 {
     public function index()
     {
-        $query = ExpensePeriod::with('branch')->withSum('expenseEntries', 'amount')->latest('year')->latest('month');
+        $query = ExpensePeriod::with('branch')
+            ->withSum('expenseEntries', 'amount')
+            ->withSum('salesEntries', 'amount')
+            ->latest('year')->latest('month');
 
         if (request('branch_id')) {
             $query->where('branch_id', request('branch_id'));
@@ -78,8 +82,22 @@ class ExpensePeriodController extends Controller
             ->map(fn($a) => (float) $a)
             ->toArray();
 
+        $salesEntries = $expensePeriod->salesEntries()
+            ->with('creator', 'updater')
+            ->get()
+            ->map(fn($e) => [
+                'id'              => $e->id,
+                'date'            => $e->date->format('Y-m-d'),
+                'amount'          => (float) $e->amount,
+                'notes'           => $e->notes ?? '',
+                'created_by_name' => $e->creator?->name,
+                'updated_by_name' => $e->updater?->name,
+            ])
+            ->values()
+            ->toArray();
+
         return view('expense-periods.show', compact(
-            'expensePeriod', 'monthPeriods', 'entries', 'categories', 'branches', 'grossSales'
+            'expensePeriod', 'monthPeriods', 'entries', 'categories', 'branches', 'grossSales', 'salesEntries'
         ));
     }
 

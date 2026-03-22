@@ -20,7 +20,6 @@
             </a>
             <div class="flex items-center gap-6 text-sm font-medium text-gray-600">
                 <a href="{{ route('expense-periods.index') }}" class="hover:text-indigo-600">Periods</a>
-                <a href="{{ route('sales.index') }}" class="hover:text-indigo-600">Sales</a>
                 <a href="{{ route('reports.consolidated') }}" class="hover:text-indigo-600">Consolidated</a>
                 @can('manage users')
                     <a href="{{ route('users.index') }}" class="hover:text-indigo-600">Users</a>

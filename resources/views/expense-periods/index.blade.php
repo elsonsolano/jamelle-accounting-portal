@@ -52,7 +52,8 @@
             <tr>
                 <th class="px-4 py-3 text-left">Branch</th>
                 <th class="px-4 py-3 text-left">Period</th>
-                <th class="px-4 py-3 text-right">Running Total</th>
+                <th class="px-4 py-3 text-right">Total Expenses</th>
+                <th class="px-4 py-3 text-right">Total Sales</th>
                 <th class="px-4 py-3 text-right">VAT/ITR Estimate</th>
                 <th class="px-4 py-3 text-center">Actions</th>
             </tr>
@@ -66,6 +67,13 @@
                     </td>
                     <td class="px-4 py-3 text-right font-medium text-indigo-700 tabular-nums">
                         ₱{{ number_format($period->expense_entries_sum_amount ?? 0, 2) }}
+                    </td>
+                    <td class="px-4 py-3 text-right tabular-nums">
+                        @if($period->sales_entries_sum_amount)
+                            <span class="font-medium text-emerald-700">₱{{ number_format($period->sales_entries_sum_amount, 2) }}</span>
+                        @else
+                            <span class="text-gray-300 text-xs">—</span>
+                        @endif
                     </td>
                     <td class="px-4 py-3 text-right text-gray-600">
                         ₱{{ number_format($period->vat_itr_estimate, 2) }}
