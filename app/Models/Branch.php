@@ -7,7 +7,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Branch extends Model
 {
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'is_cost_center'];
+
+    protected $casts = ['is_cost_center' => 'boolean'];
 
     public function expensePeriods(): HasMany
     {

@@ -96,8 +96,11 @@ class ExpensePeriodController extends Controller
             ->values()
             ->toArray();
 
+        $isCostCenter = $expensePeriod->branch->is_cost_center;
+
         return view('expense-periods.show', compact(
-            'expensePeriod', 'monthPeriods', 'entries', 'categories', 'branches', 'grossSales', 'salesEntries'
+            'expensePeriod', 'monthPeriods', 'entries', 'categories', 'branches', 'grossSales', 'salesEntries',
+            'isCostCenter'
         ));
     }
 

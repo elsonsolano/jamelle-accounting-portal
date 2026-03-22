@@ -37,6 +37,7 @@
               :class="activeTab === 'expenses' ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-100 text-gray-500'"
               x-text="entries.length"></span>
     </button>
+    @if(!$isCostCenter)
     <button type="button"
             @click="activeTab = 'sales'"
             :class="activeTab === 'sales'
@@ -48,6 +49,7 @@
               :class="activeTab === 'sales' ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-100 text-gray-500'"
               x-text="salesEntries.length + ' days'"></span>
     </button>
+    @endif
 </div>
 
 {{-- ══════════════════════════════════════════════════════════════════════════
@@ -282,7 +284,21 @@
             </template>
         </div>
 
-        {{-- Operating Income --}}
+        {{-- Operating Income / Cost Center Summary --}}
+        @if($isCostCenter)
+        <div class="bg-white rounded-lg shadow-sm border border-amber-200 overflow-hidden">
+            <div class="px-4 py-3 border-b border-amber-100 bg-amber-50">
+                <h2 class="font-semibold text-amber-700 text-sm uppercase tracking-wide">Overhead Summary</h2>
+                <p class="text-xs text-amber-500 mt-0.5">Cost center — no sales tracked</p>
+            </div>
+            <div class="divide-y divide-amber-50 text-sm">
+                <div class="flex justify-between px-4 py-2.5">
+                    <span class="text-gray-600 text-xs">Total Overhead</span>
+                    <span class="tabular-nums text-xs font-medium text-amber-700" x-text="'₱' + fmt(grandTotal)"></span>
+                </div>
+            </div>
+        </div>
+        @else
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                 <h2 class="font-semibold text-gray-700 text-sm uppercase tracking-wide">Operating Income</h2>
@@ -324,6 +340,7 @@
                 </p>
             </template>
         </div>
+        @endif
 
     </div>{{-- /right sidebar --}}
 
@@ -334,6 +351,7 @@
 {{-- ══════════════════════════════════════════════════════════════════════════
      SALES TAB
      ══════════════════════════════════════════════════════════════════════════ --}}
+@if(!$isCostCenter)
 <div x-show="activeTab === 'sales'" x-cloak>
 
     {{-- Sales total card + add form --}}
@@ -477,6 +495,7 @@
     </div>
 
 </div>{{-- /sales tab --}}
+@endif{{-- /!isCostCenter --}}
 
 
 {{-- ── Month Navigation ────────────────────────────────────────────────────── --}}

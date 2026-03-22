@@ -15,7 +15,7 @@
     {{-- Navigation --}}
     <nav class="bg-white border-b border-gray-200 shadow-sm">
         <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-14">
-            <a href="{{ route('expense-periods.index') }}">
+            <a href="{{ route('dashboard') }}">
                 <img src="{{ asset('images/logo.png') }}" alt="Jamelle 1122 Corporation" class="h-12">
             </a>
             <div class="flex items-center gap-6 text-sm font-medium text-gray-600">

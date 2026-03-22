@@ -10,14 +10,21 @@ class BranchSeeder extends Seeder
     public function run(): void
     {
         $branches = [
-            'Head Office',
-            'SM Lanang',
-            'SM Ecoland',
-            'Ayala Abreeza',
+            ['name' => 'Head Office',    'is_cost_center' => true],
+            ['name' => 'SM Lanang',      'is_cost_center' => false],
+            ['name' => 'SM Ecoland',     'is_cost_center' => false],
+            ['name' => 'Ayala Abreeza',  'is_cost_center' => false],
         ];
 
-        foreach ($branches as $name) {
-            Branch::firstOrCreate(['name' => $name]);
+        foreach ($branches as $data) {
+            Branch::firstOrCreate(
+                ['name' => $data['name']],
+                ['is_cost_center' => $data['is_cost_center']]
+            );
+
+            // Ensure existing rows are updated too
+            Branch::where('name', $data['name'])
+                ->update(['is_cost_center' => $data['is_cost_center']]);
         }
     }
 }
