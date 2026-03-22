@@ -12,17 +12,19 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-# Detect database state:
-# - "Migration table not found" → fresh or corrupted DB → wipe and seed
-# - Anything else               → established DB → run only new migrations
-MIGRATE_STATUS=$(php artisan migrate:status --no-ansi 2>&1 || true)
+# Run migrations. If MySQL rejects a CREATE TABLE because the table already
+# exists (orphaned from a previous crashed deploy), wipe and start clean.
+MIGRATE_OUT=$(php artisan migrate --force 2>&1) && MIGRATE_OK=1 || MIGRATE_OK=0
 
-if echo "$MIGRATE_STATUS" | grep -q "Migration table not found"; then
-    echo "Fresh database detected — running migrate:fresh --seed"
-    php artisan migrate:fresh --force --seed
-else
-    echo "Existing database detected — running migrate"
-    php artisan migrate --force
+if [ "$MIGRATE_OK" = "0" ]; then
+    if echo "$MIGRATE_OUT" | grep -q "Base table or view already exists"; then
+        echo "Orphaned tables detected — running migrate:fresh --seed"
+        php artisan migrate:fresh --force --seed
+    else
+        # Unrelated migration error — surface it and abort
+        echo "$MIGRATE_OUT"
+        exit 1
+    fi
 fi
 
 # Start PHP-FPM + Nginx via Supervisor
