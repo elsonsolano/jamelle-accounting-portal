@@ -808,14 +808,14 @@ function periodApp() {
         },
 
         // ── Sales mutations ───────────────────────────────────────────────────
-        async addSalesEntry() {
+        addSalesEntry() {
             this.salesFormError = '';
             if (!this.salesForm.date || !this.salesForm.amount) {
                 this.salesFormError = 'Date and Gross Sales are required.';
                 return;
             }
             if (this.salesForm.date < this.salesMinDate || this.salesForm.date > this.salesMaxDate) {
-                this.salesFormError = `Date must be within the period month.`;
+                this.salesFormError = 'Date must be within the period month.';
                 return;
             }
             if (this.salesEntries.find(e => e.date === this.salesForm.date)) {
@@ -823,25 +823,24 @@ function periodApp() {
                 return;
             }
             this.salesSaving = true;
-            try {
-                const res = await this.api('POST', '/sales-entries', {
-                    period_id: this.periodId,
-                    date:      this.salesForm.date,
-                    amount:    this.salesForm.amount,
-                    notes:     this.salesForm.notes,
-                });
+            this.api('POST', '/sales-entries', {
+                period_id: this.periodId,
+                date:      this.salesForm.date,
+                amount:    this.salesForm.amount,
+                notes:     this.salesForm.notes,
+            }).then(res => {
                 this.salesEntries.push(res);
                 this.salesForm.amount = '';
                 this.salesForm.notes  = '';
-                // Auto-advance date by 1 day
                 const next = new Date(this.salesForm.date);
                 next.setDate(next.getDate() + 1);
-                const nextStr = next.toISOString().slice(0,10);
+                const nextStr = next.toISOString().slice(0, 10);
                 if (nextStr <= this.salesMaxDate) this.salesForm.date = nextStr;
-            } catch (e) {
+            }).catch(e => {
                 this.salesFormError = e.message || 'Failed to save entry.';
-            }
-            this.salesSaving = false;
+            }).finally(() => {
+                this.salesSaving = false;
+            });
         },
 
         startSalesEdit(entry) {
@@ -849,26 +848,24 @@ function periodApp() {
             this.salesEditForm  = { date: entry.date, amount: entry.amount, notes: entry.notes };
         },
 
-        async saveSalesEdit(entry) {
+        saveSalesEdit(entry) {
             if (!this.salesEditForm.date || !this.salesEditForm.amount) return;
-            try {
-                const res = await this.api('PUT', `/sales-entries/${entry.id}`, this.salesEditForm);
+            this.api('PUT', `/sales-entries/${entry.id}`, this.salesEditForm).then(res => {
                 const idx = this.salesEntries.findIndex(e => e.id === entry.id);
                 if (idx !== -1) this.salesEntries[idx] = res;
                 this.salesEditingId = null;
-            } catch (e) {
+            }).catch(e => {
                 alert(e.message || 'Failed to update entry.');
-            }
+            });
         },
 
-        async deleteSalesEntry(id) {
+        deleteSalesEntry(id) {
             if (!confirm('Delete this sales entry?')) return;
-            try {
-                await this.api('DELETE', `/sales-entries/${id}`);
+            this.api('DELETE', `/sales-entries/${id}`).then(() => {
                 this.salesEntries = this.salesEntries.filter(e => e.id !== id);
-            } catch (e) {
+            }).catch(e => {
                 alert(e.message || 'Failed to delete.');
-            }
+            });
         },
     };
 }
