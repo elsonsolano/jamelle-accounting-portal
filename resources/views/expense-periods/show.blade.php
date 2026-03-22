@@ -361,7 +361,7 @@
                            class="w-full border-gray-300 rounded text-sm focus:ring-emerald-500 focus:border-emerald-500"
                            @keydown.enter="addSalesEntry">
                 </div>
-                <button @click="addSalesEntry" :disabled="salesSaving"
+                <button type="button" @click="addSalesEntry" :disabled="salesSaving"
                         class="bg-emerald-600 text-white text-sm px-5 py-2 rounded hover:bg-emerald-700 disabled:opacity-50">
                     <span x-show="!salesSaving">Add Entry</span>
                     <span x-show="salesSaving">Saving…</span>
@@ -417,8 +417,8 @@
                         <template x-if="salesEditingId !== entry.id">
                             <td class="px-4 py-3 text-center">
                                 <span class="opacity-0 group-hover:opacity-100 transition-opacity space-x-2">
-                                    <button @click="startSalesEdit(entry)" class="text-indigo-600 hover:underline text-xs">Edit</button>
-                                    <button @click="deleteSalesEntry(entry.id)" class="text-red-500 hover:underline text-xs">Delete</button>
+                                    <button type="button" @click="startSalesEdit(entry)" class="text-indigo-600 hover:underline text-xs">Edit</button>
+                                    <button type="button" @click="deleteSalesEntry(entry.id)" class="text-red-500 hover:underline text-xs">Delete</button>
                                 </span>
                             </td>
                         </template>
@@ -445,9 +445,9 @@
                         </template>
                         <template x-if="salesEditingId === entry.id">
                             <td class="px-4 py-2 text-center space-x-2">
-                                <button @click="saveSalesEdit(entry)"
+                                <button type="button" @click="saveSalesEdit(entry)"
                                         class="text-emerald-600 hover:underline text-xs font-medium">Save</button>
-                                <button @click="salesEditingId = null"
+                                <button type="button" @click="salesEditingId = null"
                                         class="text-gray-400 hover:underline text-xs">Cancel</button>
                             </td>
                         </template>
