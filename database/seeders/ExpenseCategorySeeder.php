@@ -36,6 +36,12 @@ class ExpenseCategorySeeder extends Seeder
             'Released Separation/Retirement Pay',
             'Miscellaneous',
             'Tel, Cable, Internet & Cel.',
+            'Fuel',
+            'Office Equipments',
+            'Logistics',
+            'Loans Payable',
+            'Vehicle Maintenance',
+            'Commissary Rental & Electricity',
         ];
 
         foreach ($categories as $name) {

@@ -383,6 +383,12 @@ const CATEGORY_COLORS = {
     'Tel, Cable, Internet & Cel.':         'bg-sky-100 text-sky-700',
     'Other Expense':                        'bg-gray-100 text-gray-600',
     'Miscellaneous':                        'bg-gray-100 text-gray-600',
+    'Fuel':                                'bg-orange-100 text-orange-700',
+    'Office Equipments':                   'bg-violet-100 text-violet-700',
+    'Logistics':                           'bg-teal-100 text-teal-700',
+    'Loans Payable':                       'bg-rose-100 text-rose-700',
+    'Vehicle Maintenance':                 'bg-lime-100 text-lime-700',
+    'Commissary Rental & Electricity':     'bg-cyan-100 text-cyan-700',
 };
 
 function expenseApp() {
