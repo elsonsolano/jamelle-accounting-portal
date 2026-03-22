@@ -29,6 +29,11 @@ class ExpensePeriod extends Model
         return $this->hasMany(GrossSales::class, 'period_id');
     }
 
+    public function salesEntries(): HasMany
+    {
+        return $this->hasMany(SalesEntry::class, 'period_id')->orderBy('date');
+    }
+
     public function getMonthNameAttribute(): string
     {
         return \Carbon\Carbon::create($this->year, $this->month)->format('F Y');
