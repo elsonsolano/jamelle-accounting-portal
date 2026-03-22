@@ -270,8 +270,8 @@
                     <li class="px-4 py-6 text-center text-gray-400 text-xs">No entries yet.</li>
                 </template>
                 <template x-for="[name, total] in Object.entries(categoryTotals)" :key="name">
-                    <li class="flex justify-between px-4 py-2 hover:bg-gray-50">
-                        <span class="text-gray-700 text-xs leading-snug" x-text="name"></span>
+                    <li class="flex justify-between items-center px-4 py-2 hover:bg-gray-50">
+                        <span class="px-2 py-0.5 rounded text-xs font-medium" :class="categoryColor(name)" x-text="name"></span>
                         <span class="text-gray-800 tabular-nums text-xs font-medium ml-4 shrink-0" x-text="fmt(total)"></span>
                     </li>
                 </template>
