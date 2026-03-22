@@ -15,8 +15,8 @@
     {{-- Navigation --}}
     <nav class="bg-white border-b border-gray-200 shadow-sm">
         <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-14">
-            <a href="{{ route('expense-periods.index') }}" class="text-lg font-bold text-indigo-700 tracking-tight">
-                Accounting Portal
+            <a href="{{ route('expense-periods.index') }}">
+                <img src="{{ asset('images/logo.png') }}" alt="Jamelle 1122 Corporation" class="h-8">
             </a>
             <div class="flex items-center gap-6 text-sm font-medium text-gray-600">
                 <a href="{{ route('expense-periods.index') }}" class="hover:text-indigo-600">Periods</a>

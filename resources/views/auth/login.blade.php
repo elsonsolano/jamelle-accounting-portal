@@ -9,8 +9,8 @@
 <body class="bg-gray-100 min-h-screen flex items-center justify-center">
     <div class="w-full max-w-md">
         <div class="text-center mb-8">
-            <h1 class="text-2xl font-bold text-indigo-700">Accounting Portal</h1>
-            <p class="text-sm text-gray-500 mt-1">Sign in to continue</p>
+            <img src="{{ asset('images/logo.png') }}" alt="Jamelle 1122 Corporation" class="h-16 mx-auto mb-4">
+            <p class="text-sm text-gray-500">Sign in to continue</p>
         </div>
 
         <div class="bg-white rounded-lg shadow border border-gray-100 p-8">
