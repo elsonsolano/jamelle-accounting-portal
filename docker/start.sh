@@ -27,5 +27,10 @@ if [ "$MIGRATE_OK" = "0" ]; then
     fi
 fi
 
+# Seed reference data (uses firstOrCreate — safe to run on every deploy)
+php artisan db:seed --class=ExpenseCategorySeeder --force
+php artisan db:seed --class=BranchSeeder --force
+php artisan db:seed --class=RoleSeeder --force
+
 # Start PHP-FPM + Nginx via Supervisor
 exec /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf
