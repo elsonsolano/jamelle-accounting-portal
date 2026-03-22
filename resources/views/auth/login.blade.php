@@ -9,7 +9,7 @@
 <body class="bg-gray-100 min-h-screen flex items-center justify-center">
     <div class="w-full max-w-md">
         <div class="text-center mb-8">
-            <img src="{{ asset('images/logo.png') }}" alt="Jamelle 1122 Corporation" class="h-16 mx-auto mb-4">
+            <img src="{{ asset('images/logo.png') }}" alt="Jamelle 1122 Corporation" class="h-40 mx-auto mb-4">
             <p class="text-sm text-gray-500">Sign in to continue</p>
         </div>
 
