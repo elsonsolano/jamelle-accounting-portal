@@ -342,32 +342,33 @@
         {{-- Add Entry Form --}}
         <div class="flex-1 bg-white border border-gray-200 rounded-lg shadow-sm p-5">
             <h2 class="text-sm font-semibold text-gray-700 mb-4">Add Daily Sales Entry</h2>
-            <form @submit.prevent="addSalesEntry" novalidate>
-                <div class="flex flex-wrap gap-3 items-end">
-                    <div>
-                        <label class="block text-xs text-gray-500 mb-1">Date <span class="text-red-400">*</span></label>
-                        <input type="date" x-model="salesForm.date"
-                               :min="salesMinDate" :max="salesMaxDate"
-                               class="border-gray-300 rounded text-sm focus:ring-emerald-500 focus:border-emerald-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-gray-500 mb-1">Gross Sales <span class="text-red-400">*</span></label>
-                        <input type="number" x-model="salesForm.amount" min="0" step="0.01" placeholder="0.00"
-                               class="border-gray-300 rounded text-sm focus:ring-emerald-500 focus:border-emerald-500 w-44 text-right">
-                    </div>
-                    <div class="flex-1 min-w-44">
-                        <label class="block text-xs text-gray-500 mb-1">Notes <span class="text-gray-300">(optional)</span></label>
-                        <input type="text" x-model="salesForm.notes" placeholder="e.g. Holiday, promo day…"
-                               class="w-full border-gray-300 rounded text-sm focus:ring-emerald-500 focus:border-emerald-500">
-                    </div>
-                    <button type="submit" :disabled="salesSaving"
-                            class="bg-emerald-600 text-white text-sm px-5 py-2 rounded hover:bg-emerald-700 disabled:opacity-50">
-                        <span x-show="!salesSaving">Add Entry</span>
-                        <span x-show="salesSaving">Saving…</span>
-                    </button>
+            <div class="flex flex-wrap gap-3 items-end">
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">Date <span class="text-red-400">*</span></label>
+                    <input type="date" x-model="salesForm.date"
+                           :min="salesMinDate" :max="salesMaxDate"
+                           @keydown.enter.prevent="addSalesEntry"
+                           class="border-gray-300 rounded text-sm focus:ring-emerald-500 focus:border-emerald-500">
                 </div>
-                <p x-show="salesFormError" x-text="salesFormError" class="text-red-500 text-xs mt-2"></p>
-            </form>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">Gross Sales <span class="text-red-400">*</span></label>
+                    <input type="number" x-model="salesForm.amount" min="0" step="0.01" placeholder="0.00"
+                           @keydown.enter.prevent="addSalesEntry"
+                           class="border-gray-300 rounded text-sm focus:ring-emerald-500 focus:border-emerald-500 w-44 text-right">
+                </div>
+                <div class="flex-1 min-w-44">
+                    <label class="block text-xs text-gray-500 mb-1">Notes <span class="text-gray-300">(optional)</span></label>
+                    <input type="text" x-model="salesForm.notes" placeholder="e.g. Holiday, promo day…"
+                           @keydown.enter.prevent="addSalesEntry"
+                           class="w-full border-gray-300 rounded text-sm focus:ring-emerald-500 focus:border-emerald-500">
+                </div>
+                <button type="button" @click.prevent="addSalesEntry" :disabled="salesSaving"
+                        class="bg-emerald-600 text-white text-sm px-5 py-2 rounded hover:bg-emerald-700 disabled:opacity-50">
+                    <span x-show="!salesSaving">Add Entry</span>
+                    <span x-show="salesSaving">Saving…</span>
+                </button>
+            </div>
+            <p x-show="salesFormError" x-text="salesFormError" class="text-red-500 text-xs mt-2"></p>
         </div>
 
         {{-- Total card --}}
