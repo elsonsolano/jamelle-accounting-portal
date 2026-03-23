@@ -3,10 +3,13 @@
 namespace App\Providers;
 
 use App\Models\ExpenseEntry;
+use App\Models\ExpensePeriod;
 use App\Policies\ExpenseEntryPolicy;
+use App\Policies\ExpensePeriodPolicy;
 use App\Services\ExpenseCalculatorService;
 use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -18,7 +21,10 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Schema::defaultStringLength(125);
+
         Gate::policy(ExpenseEntry::class, ExpenseEntryPolicy::class);
+        Gate::policy(ExpensePeriod::class, ExpensePeriodPolicy::class);
 
         // Admin bypasses all gates
         Gate::before(function ($user, $ability) {
