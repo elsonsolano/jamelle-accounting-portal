@@ -40,12 +40,15 @@ php artisan db:seed
 
 ### Core Domain
 
-The app tracks monthly expenses per branch. The central entity chain is:
+The app tracks monthly expenses and sales per branch. The central entity chain is:
 
 ```
-Branch → ExpensePeriod (branch + month + year, unique) → ExpenseEntry (rows in the sheet)
-                                                        → GrossSales (per branch per period)
+Branch → ExpensePeriod (branch + month + year, unique) → ExpenseEntry (expense rows)
+                                                        → SalesEntry (sales rows)
+                                                        → GrossSales (vat_itr per branch per period)
 ```
+
+`Branch` has an `is_cost_center` boolean. Cost center branches (Head Office) have expenses only — no sales, operating income, VAT/ITR, or net operating income.
 
 ### The Expense Period Show Page (`expense-periods/{id}`)
 
@@ -67,25 +70,39 @@ This is the most complex page. It is a single Alpine.js component (`x-data="expe
 | PUT | `/expense-entries/{id}` | `ExpenseEntryController::update` | Update entry; same response shape |
 | DELETE | `/expense-entries/{id}` | `ExpenseEntryController::destroy` | Delete entry |
 | POST | `/expense-entries/reorder` | `ExpenseEntryController::reorder` | Bulk sort_order update |
-| POST | `/gross-sales` | `GrossSalesController::upsert` | Upsert gross sales for one branch/period |
+| POST | `/gross-sales` | `GrossSalesController::upsert` | Upsert `amount` and/or `vat_itr` for one branch/period — both fields are optional (omitting one leaves it unchanged) |
+| POST | `/sales-entries` | `SalesEntryController::store` | Create sales entry |
+| PUT | `/sales-entries/{id}` | `SalesEntryController::update` | Update sales entry |
+| DELETE | `/sales-entries/{id}` | `SalesEntryController::destroy` | Delete sales entry |
 
 ### Report Routes
 
 | Route | Controller Method | Purpose |
 |---|---|---|
 | `GET /reports/consolidated` | `ReportController::consolidatedExpense` | Matrix: categories × branches for a month/year |
+| `GET /reports/branch-summary` | `ReportController::branchSummary` | Per-branch: Total Sales, Expenses, Operating Income, VAT/ITR, Net Operating Income — with flexible date range filter |
 | `GET /reports/{period}/summary` | `ReportController::summary` | Category totals + operating income for one period |
 | `GET /reports/{period}/operating-income` | `ReportController::operatingIncome` | Gross sales, expenses, VAT/ITR breakdown |
+
+**Important:** `/reports/branch-summary` must be declared before `/reports/{period}/summary` in `routes/web.php` to avoid the wildcard swallowing it.
 
 `ExpenseCalculatorService` (`app/Services/`) is used exclusively by `ReportController`. It is bound as a singleton in `AppServiceProvider`. The show-page calculations are done client-side in Alpine.js.
 
 ### Key Model Behaviors
 
-- **`ExpenseEntry`** auto-sets `created_by` / `updated_by` (FK to `users`) via `boot()` model events (`creating` sets both; `updating` sets only `updated_by`). Both are included in API responses and displayed as "by [name]" under each entry's particular in the table.
+- **`ExpenseEntry`** auto-sets `created_by` / `updated_by` (FK to `users`) via `boot()` model events (`creating` sets both; `updating` sets only `updated_by`). Both are included in API responses and displayed as "by [name]" under each entry in the table.
 - **`ExpenseEntry`** has a `sort_order` integer; default scope in `ExpensePeriod::expenseEntries()` is `sort_order ASC` then `date DESC`.
-- **`GrossSales`** is a separate table (period_id + branch_id) — one row per branch per period.
+- **`SalesEntry`** follows the same `created_by`/`updated_by` boot pattern as `ExpenseEntry`. Sales are itemized entries — the total for a period is `SalesEntry::whereIn('period_id', ...)->sum('amount')`, not `GrossSales.amount`.
+- **`GrossSales`** stores `vat_itr` (decimal 15,2, default 0) per branch per period — this is the VAT/ITR estimate used by the Branch Summary report. The `amount` field on `GrossSales` is a legacy single-value field and is no longer the source of truth for sales totals.
 - All money columns are `decimal(15,2)`.
 - **`User`** has a nullable `branch_id` FK and a `branch()` BelongsTo relationship (used by `ExpenseEntryPolicy`).
+
+### Branch Summary Report (`/reports/branch-summary`)
+
+- Aggregates `SalesEntry.amount` for Total Sales and `GrossSales.vat_itr` for VAT/ITR across a flexible date range (from/to month+year).
+- Cost center branches show `—` for all revenue-side columns. Their expenses are included in `grandExpenses` and reduce the overall Operating Income, but they are excluded from `grandSales` and `grandVatItr`.
+- Grand total formula: `grandOperating = grandSales - grandExpenses` (all branches), `grandNet = grandOperating - grandVatItr` (non-cost-center branches only).
+- VAT/ITR is editable inline (single-month view only) via a hover-to-edit pencil icon that saves to `POST /gross-sales`.
 
 ### Authorization
 
@@ -100,8 +117,6 @@ Four roles (seeded via `RoleSeeder`):
 
 `@can('manage users')` in Blade is true for both Superadmin (explicit permission) and Admin (Gate::before bypass).
 
-User management routes (`GET/POST /users`) are behind `can:manage users` middleware.
-
 ### Tailwind v4 Notes
 
 CSS entry point is `resources/css/app.css` using `@import 'tailwindcss'`. The `@tailwindcss/forms` plugin uses `strategy: 'class'`. Source scanning covers `resources/**/*.blade.php` and `resources/**/*.js`. The stale `@source '../../app/Livewire/**/*.php'` line in `app.css` is harmless but can be removed.
@@ -110,7 +125,7 @@ Dynamic Tailwind classes for category badge colors are defined as plain strings 
 
 ### Seeded Reference Data
 
-- **Branches:** Head Office, SM Lanang, SM Ecoland, Ayala Abreeza
+- **Branches:** Head Office (cost center), SM Lanang, SM Ecoland, Ayala Abreeza
 - **26 expense categories** (see `ExpenseCategorySeeder`) — names are the keys in `CATEGORY_COLORS` in `show.blade.php`; name changes must be reflected in both places.
 - **Default admin:** `admin@example.com` / `password`
 - **Default superadmin:** `superadmin@example.com` / `password`
