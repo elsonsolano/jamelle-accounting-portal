@@ -322,10 +322,7 @@
                           :class="operatingIncome >= 0 ? 'text-green-700' : 'text-red-700'"
                           x-text="'₱' + fmt(operatingIncome)"></span>
                 </div>
-                <div class="flex justify-between px-4 py-2.5">
-                    <span class="text-gray-600 text-xs">VAT/ITR Estimate</span>
-                    <span class="tabular-nums text-xs font-medium text-orange-600" x-text="'₱' + fmt(vatItrEstimate)"></span>
-                </div>
+
                 <div class="flex justify-between px-4 py-3 bg-indigo-50">
                     <span class="text-indigo-800 text-xs font-bold uppercase tracking-wide">Net Operating Income</span>
                     <span class="tabular-nums text-sm font-bold"
