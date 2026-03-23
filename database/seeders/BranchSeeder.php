@@ -14,6 +14,7 @@ class BranchSeeder extends Seeder
             ['name' => 'SM Lanang',      'is_cost_center' => false],
             ['name' => 'SM Ecoland',     'is_cost_center' => false],
             ['name' => 'Ayala Abreeza',  'is_cost_center' => false],
+            ['name' => 'NCCC',           'is_cost_center' => false],
         ];
 
         foreach ($branches as $data) {
