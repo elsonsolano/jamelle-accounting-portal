@@ -7,6 +7,7 @@ use App\Models\ExpenseCategory;
 use App\Models\ExpenseEntry;
 use App\Models\ExpensePeriod;
 use App\Models\GrossSales;
+use App\Models\SalesEntry;
 use App\Services\ExpenseCalculatorService;
 use Illuminate\Http\Request;
 
@@ -112,7 +113,7 @@ class ReportController extends Controller
                 ->whereRaw('(year * 100 + month) BETWEEN ? AND ?', [$fromKey, $toKey])
                 ->pluck('id');
 
-            $totalSales    = (float) GrossSales::whereIn('period_id', $periodIds)->sum('amount');
+            $totalSales    = (float) SalesEntry::whereIn('period_id', $periodIds)->sum('amount');
             $totalExpenses = (float) ExpenseEntry::whereIn('period_id', $periodIds)->sum('amount');
             $vatItr        = (float) GrossSales::whereIn('period_id', $periodIds)->sum('vat_itr');
 

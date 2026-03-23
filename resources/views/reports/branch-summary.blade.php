@@ -89,12 +89,7 @@
                 <th class="px-5 py-3 text-right font-semibold">Total Sales</th>
                 <th class="px-5 py-3 text-right font-semibold">Total Expenses</th>
                 <th class="px-5 py-3 text-right font-semibold">Operating Income</th>
-                <th class="px-5 py-3 text-right font-semibold">
-                    VAT / ITR
-                    @if($isSingleMonth)
-                        <span class="ml-1 text-indigo-400 normal-case font-normal">(editable)</span>
-                    @endif
-                </th>
+                <th class="px-5 py-3 text-right font-semibold">VAT / ITR</th>
                 <th class="px-5 py-3 text-right font-semibold">Net Operating Income</th>
             </tr>
         </thead>
@@ -104,8 +99,12 @@
                     vatItr: {{ $row['vat_itr'] }},
                     operatingIncome: {{ $row['operating_income'] }},
                     get net() { return this.operatingIncome - this.vatItr; },
+                    editing: false,
                     saving: false,
                     saved: false,
+                    editVal: {{ $row['vat_itr'] }},
+                    startEdit() { this.editVal = this.vatItr; this.editing = true; this.$nextTick(() => this.$refs.vatInput?.focus()); },
+                    cancel() { this.editing = false; },
                     async save() {
                         this.saving = true;
                         try {
@@ -118,9 +117,11 @@
                                 body: JSON.stringify({
                                     period_id: {{ $row['period_id'] ?? 'null' }},
                                     branch_id: {{ $row['branch']->id }},
-                                    vat_itr: parseFloat(this.vatItr) || 0
+                                    vat_itr: parseFloat(this.editVal) || 0
                                 })
                             });
+                            this.vatItr = parseFloat(this.editVal) || 0;
+                            this.editing = false;
                             this.saved = true;
                             setTimeout(() => this.saved = false, 2000);
                         } finally {
@@ -163,17 +164,36 @@
                 </td>
 
                 {{-- VAT / ITR --}}
-                <td class="px-5 py-3 text-right">
+                <td class="px-5 py-3 text-right relative group/vat">
                     @if($row['is_cost_center'])
                         <span class="text-gray-300">—</span>
                     @elseif($isSingleMonth && $row['period_id'])
-                        <div class="flex items-center justify-end gap-2">
-                            <span x-show="saved" x-cloak class="text-xs text-green-500">Saved</span>
-                            <span x-show="saving" class="text-xs text-gray-400">Saving...</span>
-                            <input type="number" x-model="vatItr"
-                                   @change="save()" @keydown.enter.prevent="save()"
+                        {{-- Editing state --}}
+                        <div x-show="editing" x-cloak class="flex items-center justify-end gap-1">
+                            <input x-ref="vatInput" type="number" x-model="editVal"
+                                   @keydown.enter.prevent="save()" @keydown.escape="cancel()"
                                    min="0" step="0.01" :disabled="saving"
                                    class="w-36 text-right text-sm border-gray-300 rounded px-2 py-0.5 focus:ring-indigo-500 tabular-nums">
+                            <button @click="save()" :disabled="saving"
+                                    class="text-xs px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50">
+                                Save
+                            </button>
+                            <button @click="cancel()" class="text-xs px-2 py-1 text-gray-500 hover:text-gray-700">
+                                ✕
+                            </button>
+                        </div>
+                        {{-- Display state --}}
+                        <div x-show="!editing">
+                            <span x-show="saved" x-cloak class="text-xs text-green-500 mr-1">Saved</span>
+                            <span class="inline-block relative">
+                                <span class="tabular-nums text-gray-700" x-text="'₱' + fmt(vatItr)">₱{{ number_format($row['vat_itr'], 2) }}</span>
+                                <button @click="startEdit()"
+                                        class="absolute -left-5 top-1/2 -translate-y-1/2 opacity-0 group-hover/vat:opacity-100 transition-opacity text-gray-400 hover:text-indigo-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+                                    </svg>
+                                </button>
+                            </span>
                         </div>
                     @elseif($isSingleMonth && !$row['period_id'])
                         <span class="text-gray-400 text-xs">No period</span>
