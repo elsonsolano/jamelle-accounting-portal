@@ -112,7 +112,7 @@ Four roles (seeded via `RoleSeeder`):
 |---|---|
 | **Superadmin** | `manage users` permission — can access `/users` (create/list users). No expense data bypass. |
 | **Admin** | `Gate::before()` bypass in `AppServiceProvider` — full access to everything. |
-| **Accountant** | Can add/edit expense entries scoped to their `branch_id` via `ExpenseEntryPolicy`. |
+| **Accountant** | Can add/edit/delete expense entries scoped to their `branch_id` (`ExpenseEntryPolicy`). Can create expense periods (`ExpensePeriodPolicy`). |
 | **Viewer** | Read-only. |
 
 `@can('manage users')` in Blade is true for both Superadmin (explicit permission) and Admin (Gate::before bypass).
@@ -125,7 +125,7 @@ Dynamic Tailwind classes for category badge colors are defined as plain strings 
 
 ### Seeded Reference Data
 
-- **Branches:** Head Office (cost center), SM Lanang, SM Ecoland, Ayala Abreeza
+- **Branches:** Head Office (cost center), SM Lanang, SM Ecoland, Ayala Abreeza, NCCC
 - **26 expense categories** (see `ExpenseCategorySeeder`) — names are the keys in `CATEGORY_COLORS` in `show.blade.php`; name changes must be reflected in both places.
 - **Default admin:** `admin@example.com` / `password`
 - **Default superadmin:** `superadmin@example.com` / `password`
