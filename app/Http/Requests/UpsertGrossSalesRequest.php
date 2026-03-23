@@ -16,7 +16,8 @@ class UpsertGrossSalesRequest extends FormRequest
         return [
             'period_id' => ['required', 'exists:expense_periods,id'],
             'branch_id' => ['required', 'exists:branches,id'],
-            'amount'    => ['required', 'numeric', 'min:0'],
+            'amount'    => ['sometimes', 'nullable', 'numeric', 'min:0'],
+            'vat_itr'   => ['sometimes', 'nullable', 'numeric', 'min:0'],
         ];
     }
 }

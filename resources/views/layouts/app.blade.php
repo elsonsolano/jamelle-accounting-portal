@@ -22,6 +22,7 @@
                 <a href="{{ route('dashboard') }}" class="hover:text-indigo-600">Dashboard</a>
                 <a href="{{ route('expense-periods.index') }}" class="hover:text-indigo-600">Periods</a>
                 <a href="{{ route('reports.consolidated') }}" class="hover:text-indigo-600">Consolidated</a>
+                <a href="{{ route('reports.branch-summary') }}" class="hover:text-indigo-600">Branch Summary</a>
                 @can('manage users')
                     <a href="{{ route('users.index') }}" class="hover:text-indigo-600">Users</a>
                 @endcan

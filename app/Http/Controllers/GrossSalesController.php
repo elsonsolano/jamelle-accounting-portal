@@ -11,9 +11,14 @@ class GrossSalesController extends Controller
     {
         $data = $request->validated();
 
+        $fields = array_filter([
+            'amount'  => $data['amount'] ?? null,
+            'vat_itr' => $data['vat_itr'] ?? null,
+        ], fn($v) => $v !== null);
+
         $record = GrossSales::updateOrCreate(
             ['period_id' => $data['period_id'], 'branch_id' => $data['branch_id']],
-            ['amount'    => $data['amount']]
+            $fields
         );
 
         return response()->json($record);

@@ -62,6 +62,8 @@ Route::middleware(['auth'])->group(function () {
     // Reports
     Route::get('/reports/consolidated', [ReportController::class, 'consolidatedExpense'])
         ->name('reports.consolidated');
+    Route::get('/reports/branch-summary', [ReportController::class, 'branchSummary'])
+        ->name('reports.branch-summary');
     Route::get('/reports/{period}/summary', [ReportController::class, 'summary'])
         ->name('reports.summary');
     Route::get('/reports/{period}/operating-income', [ReportController::class, 'operatingIncome'])
