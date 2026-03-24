@@ -40,7 +40,9 @@
         <button type="submit" class="bg-gray-700 text-white text-sm px-4 py-1.5 rounded hover:bg-gray-800">
             Filter
         </button>
-        <a href="{{ route('expense-periods.index') }}" class="ml-2 text-sm text-gray-500 hover:underline py-1.5">
+        <a href="{{ route('expense-periods.index') }}"
+           onclick="sessionStorage.removeItem('epFilters')"
+           class="ml-2 text-sm text-gray-500 hover:underline py-1.5">
             Clear
         </a>
     </div>
@@ -106,3 +108,31 @@
     {{ $periods->links() }}
 </div>
 @endsection
+
+@push('scripts')
+<script>
+(function () {
+    const KEY = 'epFilters';
+    const params = new URLSearchParams(window.location.search);
+    const branch = params.get('branch_id') ?? '';
+    const month  = params.get('month') ?? '';
+
+    if (branch || month) {
+        // Active filter in URL — persist it
+        sessionStorage.setItem(KEY, JSON.stringify({ branch, month }));
+    } else if (!params.has('branch_id') && !params.has('month')) {
+        // Bare visit (not an explicit clear) — restore saved filters
+        const saved = sessionStorage.getItem(KEY);
+        if (saved) {
+            const { branch: b, month: m } = JSON.parse(saved);
+            if (b || m) {
+                const url = new URL(window.location.href);
+                if (b) url.searchParams.set('branch_id', b);
+                if (m) url.searchParams.set('month', m);
+                window.location.replace(url.toString());
+            }
+        }
+    }
+})();
+</script>
+@endpush
