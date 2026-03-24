@@ -259,50 +259,54 @@
     {{-- Right sidebar --}}
     <div class="w-80 shrink-0 space-y-4">
 
-        {{-- Category Summary --}}
+        {{-- Operational Expenses --}}
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-                <h2 class="font-semibold text-gray-700 text-sm uppercase tracking-wide">Category Summary</h2>
-                <span class="text-xs font-mono text-indigo-700 font-medium" x-text="'₱' + fmt(grandTotal)"></span>
+                <h2 class="font-semibold text-gray-700 text-sm uppercase tracking-wide">Operational Expenses</h2>
+                <span class="text-xs font-mono text-gray-700 font-medium" x-text="'₱' + fmt(operationalTotal)"></span>
             </div>
-            <ul class="divide-y divide-gray-50 text-sm max-h-96 overflow-y-auto">
-                <template x-if="Object.keys(categoryTotals).length === 0">
+            <ul class="divide-y divide-gray-50 text-sm max-h-64 overflow-y-auto">
+                <template x-if="Object.keys(operationalCategoryTotals).length === 0">
                     <li class="px-4 py-6 text-center text-gray-400 text-xs">No entries yet.</li>
                 </template>
-                <template x-for="[name, total] in Object.entries(categoryTotals)" :key="name">
+                <template x-for="[name, total] in Object.entries(operationalCategoryTotals)" :key="name">
                     <li class="flex justify-between items-center px-4 py-2 hover:bg-gray-50">
                         <span class="px-2 py-0.5 rounded text-xs font-medium" :class="categoryColor(name)" x-text="name"></span>
                         <span class="text-gray-800 tabular-nums text-xs font-medium ml-4 shrink-0" x-text="fmt(total)"></span>
                     </li>
                 </template>
             </ul>
-            <template x-if="Object.keys(categoryTotals).length > 0">
+            <template x-if="Object.keys(operationalCategoryTotals).length > 0">
                 <div class="px-4 py-2 bg-gray-50 border-t border-gray-100 flex justify-between text-sm font-semibold">
                     <span class="text-gray-600">Total</span>
-                    <span class="text-indigo-700 tabular-nums" x-text="'₱' + fmt(grandTotal)"></span>
+                    <span class="text-gray-800 tabular-nums" x-text="'₱' + fmt(operationalTotal)"></span>
                 </div>
             </template>
         </div>
 
-        {{-- Expense Breakdown --}}
+        {{-- Overhead Expenses --}}
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div class="px-4 py-3 border-b border-gray-100">
-                <h2 class="font-semibold text-gray-700 text-sm uppercase tracking-wide">Expense Breakdown</h2>
+            <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                <h2 class="font-semibold text-gray-700 text-sm uppercase tracking-wide">Overhead Expenses</h2>
+                <span class="text-xs font-mono text-gray-700 font-medium" x-text="'₱' + fmt(overheadTotal)"></span>
             </div>
-            <div class="divide-y divide-gray-100 text-sm">
-                <div class="flex justify-between px-4 py-2.5">
-                    <span class="text-gray-600 text-xs">Operational Expenses</span>
-                    <span class="tabular-nums text-xs font-medium text-gray-800" x-text="'₱' + fmt(operationalTotal)"></span>
+            <ul class="divide-y divide-gray-50 text-sm max-h-64 overflow-y-auto">
+                <template x-if="Object.keys(overheadCategoryTotals).length === 0">
+                    <li class="px-4 py-6 text-center text-gray-400 text-xs">No entries yet.</li>
+                </template>
+                <template x-for="[name, total] in Object.entries(overheadCategoryTotals)" :key="name">
+                    <li class="flex justify-between items-center px-4 py-2 hover:bg-gray-50">
+                        <span class="px-2 py-0.5 rounded text-xs font-medium" :class="categoryColor(name)" x-text="name"></span>
+                        <span class="text-gray-800 tabular-nums text-xs font-medium ml-4 shrink-0" x-text="fmt(total)"></span>
+                    </li>
+                </template>
+            </ul>
+            <template x-if="Object.keys(overheadCategoryTotals).length > 0">
+                <div class="px-4 py-2 bg-gray-50 border-t border-gray-100 flex justify-between text-sm font-semibold">
+                    <span class="text-gray-600">Total</span>
+                    <span class="text-gray-800 tabular-nums" x-text="'₱' + fmt(overheadTotal)"></span>
                 </div>
-                <div class="flex justify-between px-4 py-2.5">
-                    <span class="text-gray-600 text-xs">Overhead Expenses</span>
-                    <span class="tabular-nums text-xs font-medium text-gray-800" x-text="'₱' + fmt(overheadTotal)"></span>
-                </div>
-                <div class="flex justify-between px-4 py-2.5 bg-gray-50">
-                    <span class="text-gray-700 text-xs font-semibold">Total</span>
-                    <span class="tabular-nums text-xs font-bold text-indigo-700" x-text="'₱' + fmt(grandTotal)"></span>
-                </div>
-            </div>
+            </template>
         </div>
 
         {{-- Operating Income / Cost Center Summary --}}
@@ -688,6 +692,39 @@ function periodApp() {
             const totals = {};
             for (const e of this.entries) {
                 totals[e.category_name] = (totals[e.category_name] || 0) + (parseFloat(e.amount) || 0);
+            }
+            return Object.fromEntries(Object.entries(totals).sort(([a],[b]) => a.localeCompare(b)));
+        },
+
+        get operationalCategoryTotals() {
+            const cats = new Set([
+                'Staff Payroll and Allowance','Store Supplies',"BIR & City Gov't Fees",
+                'Stocks Cost','Store Rental & CUSA','Pest Control','Hydro Lab',
+                'Tel, Cable, Internet & Cel.','Fuel','Office Equipments','Logistics',
+                'Commissary Rental & Electricity',
+            ]);
+            const totals = {};
+            for (const e of this.entries) {
+                if (cats.has(e.category_name))
+                    totals[e.category_name] = (totals[e.category_name] || 0) + (parseFloat(e.amount) || 0);
+            }
+            return Object.fromEntries(Object.entries(totals).sort(([a],[b]) => a.localeCompare(b)));
+        },
+
+        get overheadCategoryTotals() {
+            const cats = new Set([
+                'Released 13th Month & SIL','Unreleased 13th Month','Store Maintenance',
+                'Equipment Maintenance','SSS Employer Share','Pag-ibig Employer Share',
+                'PHIC Employer Share','Representations','Other Expense',
+                'Service Incentive Leave(SIL)',"Retainer's Fee",'Royalty Fee','Ads Fee',
+                'Ins., Renewals and Other Fees','Cashless Fees',
+                'Unreleased Separation/Retirement Pay','Released Separation/Retirement Pay',
+                'Miscellaneous','Loans Payable','Vehicle Maintenance',
+            ]);
+            const totals = {};
+            for (const e of this.entries) {
+                if (cats.has(e.category_name))
+                    totals[e.category_name] = (totals[e.category_name] || 0) + (parseFloat(e.amount) || 0);
             }
             return Object.fromEntries(Object.entries(totals).sort(([a],[b]) => a.localeCompare(b)));
         },
