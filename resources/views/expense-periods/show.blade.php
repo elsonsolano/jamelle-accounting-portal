@@ -604,6 +604,7 @@ const CATEGORY_COLORS = {
     'Miscellaneous':                        'bg-gray-100 text-gray-600',
     'Fuel':                                'bg-orange-100 text-orange-700',
     'Office Equipments':                   'bg-violet-100 text-violet-700',
+    'Office Supplies':                     'bg-indigo-100 text-indigo-700',
     'Logistics':                           'bg-teal-100 text-teal-700',
     'Loans Payable':                       'bg-rose-100 text-rose-700',
     'Vehicle Maintenance':                 'bg-lime-100 text-lime-700',
@@ -719,7 +720,7 @@ function periodApp() {
                 'Service Incentive Leave(SIL)',"Retainer's Fee",'Royalty Fee','Ads Fee',
                 'Ins., Renewals and Other Fees','Cashless Fees',
                 'Unreleased Separation/Retirement Pay','Released Separation/Retirement Pay',
-                'Miscellaneous','Loans Payable','Vehicle Maintenance',
+                'Miscellaneous','Loans Payable','Vehicle Maintenance','Office Supplies',
             ]);
             const totals = {};
             for (const e of this.entries) {
@@ -752,7 +753,7 @@ function periodApp() {
                 'Service Incentive Leave(SIL)',"Retainer's Fee",'Royalty Fee','Ads Fee',
                 'Ins., Renewals and Other Fees','Cashless Fees',
                 'Unreleased Separation/Retirement Pay','Released Separation/Retirement Pay',
-                'Miscellaneous','Loans Payable','Vehicle Maintenance',
+                'Miscellaneous','Loans Payable','Vehicle Maintenance','Office Supplies',
             ]);
             return this.entries.filter(e => cats.has(e.category_name))
                                .reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);

@@ -38,6 +38,7 @@ class ExpenseCategorySeeder extends Seeder
             'Tel, Cable, Internet & Cel.',
             'Fuel',
             'Office Equipments',
+            'Office Supplies',
             'Logistics',
             'Loans Payable',
             'Vehicle Maintenance',
