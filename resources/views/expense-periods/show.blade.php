@@ -284,6 +284,27 @@
             </template>
         </div>
 
+        {{-- Expense Breakdown --}}
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div class="px-4 py-3 border-b border-gray-100">
+                <h2 class="font-semibold text-gray-700 text-sm uppercase tracking-wide">Expense Breakdown</h2>
+            </div>
+            <div class="divide-y divide-gray-100 text-sm">
+                <div class="flex justify-between px-4 py-2.5">
+                    <span class="text-gray-600 text-xs">Operational Expenses</span>
+                    <span class="tabular-nums text-xs font-medium text-gray-800" x-text="'₱' + fmt(operationalTotal)"></span>
+                </div>
+                <div class="flex justify-between px-4 py-2.5">
+                    <span class="text-gray-600 text-xs">Overhead Expenses</span>
+                    <span class="tabular-nums text-xs font-medium text-gray-800" x-text="'₱' + fmt(overheadTotal)"></span>
+                </div>
+                <div class="flex justify-between px-4 py-2.5 bg-gray-50">
+                    <span class="text-gray-700 text-xs font-semibold">Total</span>
+                    <span class="tabular-nums text-xs font-bold text-indigo-700" x-text="'₱' + fmt(grandTotal)"></span>
+                </div>
+            </div>
+        </div>
+
         {{-- Operating Income / Cost Center Summary --}}
         @if($isCostCenter)
         <div class="bg-white rounded-lg shadow-sm border border-amber-200 overflow-hidden">
@@ -673,6 +694,31 @@ function periodApp() {
 
         get grandTotal() {
             return this.entries.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+        },
+
+        get operationalTotal() {
+            const cats = new Set([
+                'Staff Payroll and Allowance','Store Supplies',"BIR & City Gov't Fees",
+                'Stocks Cost','Store Rental & CUSA','Pest Control','Hydro Lab',
+                'Tel, Cable, Internet & Cel.','Fuel','Office Equipments','Logistics',
+                'Commissary Rental & Electricity',
+            ]);
+            return this.entries.filter(e => cats.has(e.category_name))
+                               .reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+        },
+
+        get overheadTotal() {
+            const cats = new Set([
+                'Released 13th Month & SIL','Unreleased 13th Month','Store Maintenance',
+                'Equipment Maintenance','SSS Employer Share','Pag-ibig Employer Share',
+                'PHIC Employer Share','Representations','Other Expense',
+                'Service Incentive Leave(SIL)',"Retainer's Fee",'Royalty Fee','Ads Fee',
+                'Ins., Renewals and Other Fees','Cashless Fees',
+                'Unreleased Separation/Retirement Pay','Released Separation/Retirement Pay',
+                'Miscellaneous','Loans Payable','Vehicle Maintenance',
+            ]);
+            return this.entries.filter(e => cats.has(e.category_name))
+                               .reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
         },
 
         // ── Sales computed ────────────────────────────────────────────────────
