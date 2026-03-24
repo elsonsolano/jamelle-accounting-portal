@@ -394,6 +394,36 @@
         </div>
     </div>
 
+    {{-- Sales Stats Row --}}
+    <div x-show="salesEntries.length > 0" class="grid grid-cols-3 gap-4 mb-5">
+        <div class="bg-white border border-gray-200 rounded-lg px-5 py-4 flex items-center gap-4 shadow-sm">
+            <div class="text-2xl">📈</div>
+            <div>
+                <p class="text-xs text-gray-500 uppercase tracking-wide font-medium">Avg Daily Sales</p>
+                <p class="text-lg font-bold text-gray-800 tabular-nums mt-0.5" x-text="'₱' + fmt(avgDailySales)"></p>
+                <p class="text-xs text-gray-400 mt-0.5" x-text="salesEntries.length + ' day(s)'"></p>
+            </div>
+        </div>
+        <div class="bg-white border border-gray-200 rounded-lg px-5 py-4 flex items-center gap-4 shadow-sm">
+            <div class="text-2xl">🏆</div>
+            <div>
+                <p class="text-xs text-gray-500 uppercase tracking-wide font-medium">Biggest Day</p>
+                <p class="text-lg font-bold text-emerald-700 tabular-nums mt-0.5" x-text="'₱' + fmt(biggestSales)"></p>
+                <p class="text-xs text-gray-400 mt-0.5"
+                   x-text="salesEntries.length ? formatDateLong(sortedSalesEntries.reduce((a,b) => parseFloat(a.amount) >= parseFloat(b.amount) ? a : b).date) : ''"></p>
+            </div>
+        </div>
+        <div class="bg-white border border-gray-200 rounded-lg px-5 py-4 flex items-center gap-4 shadow-sm">
+            <div class="text-2xl">📉</div>
+            <div>
+                <p class="text-xs text-gray-500 uppercase tracking-wide font-medium">Lowest Day</p>
+                <p class="text-lg font-bold text-red-600 tabular-nums mt-0.5" x-text="'₱' + fmt(lowestSales)"></p>
+                <p class="text-xs text-gray-400 mt-0.5"
+                   x-text="salesEntries.length ? formatDateLong(sortedSalesEntries.reduce((a,b) => parseFloat(a.amount) <= parseFloat(b.amount) ? a : b).date) : ''"></p>
+            </div>
+        </div>
+    </div>
+
     {{-- Sales Entries Table --}}
     <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
         <table class="min-w-full text-sm">
@@ -652,6 +682,20 @@ function periodApp() {
 
         get salesTotal() {
             return this.salesEntries.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+        },
+
+        get avgDailySales() {
+            return this.salesEntries.length ? this.salesTotal / this.salesEntries.length : 0;
+        },
+
+        get biggestSales() {
+            if (!this.salesEntries.length) return 0;
+            return Math.max(...this.salesEntries.map(e => parseFloat(e.amount) || 0));
+        },
+
+        get lowestSales() {
+            if (!this.salesEntries.length) return 0;
+            return Math.min(...this.salesEntries.map(e => parseFloat(e.amount) || 0));
         },
 
         get salesMinDate() {
