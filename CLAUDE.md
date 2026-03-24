@@ -52,13 +52,20 @@ Branch → ExpensePeriod (branch + month + year, unique) → ExpenseEntry (expen
 
 ### The Expense Period Show Page (`expense-periods/{id}`)
 
-This is the most complex page. It is a single Alpine.js component (`x-data="expenseApp()"`) defined inline in `resources/views/expense-periods/show.blade.php`. The PHP controller passes all data as JSON via `@json()` blade directives on page load. All subsequent mutations go through `fetch()` calls to the existing JSON API routes.
+This is the most complex page. It is a single Alpine.js component (`x-data="periodApp()"`) defined inline in `resources/views/expense-periods/show.blade.php`. The PHP controller passes all data as JSON via `@json()` blade directives on page load. All subsequent mutations go through `fetch()` calls to the existing JSON API routes.
 
 **Data flow:**
 1. `ExpensePeriodController::show()` loads entries (with `creator`/`updater` names), categories, branches, and gross sales — all passed as blade variables.
 2. Alpine.js holds the `entries` array in memory and reacts to add/edit/delete/search/sort without page reloads.
-3. All computed panels (running totals, category summary, operating income, net operating income) are Alpine.js getters derived from the in-memory `entries` array — no server round-trips needed.
+3. All computed panels (running totals, sidebar breakdowns, operating income, net operating income) are Alpine.js getters derived from the in-memory `entries` array — no server round-trips needed.
 4. Mutations (add/edit/delete entry, save gross sales) call the JSON API endpoints and update the local array from the response.
+
+**Right sidebar (Expenses tab)** has three panels:
+- **Operational Expenses** — category-level breakdown for operational categories + subtotal
+- **Overhead Expenses** — category-level breakdown for overhead categories + subtotal
+- **Operating Income** — Gross Sales − Total Expenses, VAT/ITR, Net Operating Income (hidden for cost center branches)
+
+**Sales tab stats** — when sales entries exist, three stat cards appear above the table: Average Daily Sales, Biggest Day (with date), Lowest Day (with date). Computed via `avgDailySales`, `biggestSales`, `lowestSales` getters.
 
 **Category color map** lives as a JS constant (`CATEGORY_COLORS`) in the `@push('scripts')` block of `show.blade.php`. If category names change, update it there too.
 
@@ -126,6 +133,14 @@ Dynamic Tailwind classes for category badge colors are defined as plain strings 
 ### Seeded Reference Data
 
 - **Branches:** Head Office (cost center), SM Lanang, SM Ecoland, Ayala Abreeza, NCCC
-- **26 expense categories** (see `ExpenseCategorySeeder`) — names are the keys in `CATEGORY_COLORS` in `show.blade.php`; name changes must be reflected in both places.
+- **32 expense categories** (see `ExpenseCategorySeeder`) — names are the keys in `CATEGORY_COLORS` in `show.blade.php`; name changes must be reflected in both places.
 - **Default admin:** `admin@example.com` / `password`
 - **Default superadmin:** `superadmin@example.com` / `password`
+
+### Expense Category Groupings
+
+Categories are split into two groups used by the sidebar computed getters (`operationalCategoryTotals`, `overheadCategoryTotals`, `operationalTotal`, `overheadTotal`) in `show.blade.php`. The group membership is defined as hardcoded `Set` constants in those getters — if categories are added or renamed, update all four getters.
+
+**Operational (12):** Staff Payroll and Allowance, Store Supplies, BIR & City Gov't Fees, Stocks Cost, Store Rental & CUSA, Pest Control, Hydro Lab, Tel, Cable, Internet & Cel., Fuel, Office Equipments, Logistics, Commissary Rental & Electricity
+
+**Overhead (20):** Released 13th Month & SIL, Unreleased 13th Month, Store Maintenance, Equipment Maintenance, SSS Employer Share, Pag-ibig Employer Share, PHIC Employer Share, Representations, Other Expense, Service Incentive Leave(SIL), Retainer's Fee, Royalty Fee, Ads Fee, Ins., Renewals and Other Fees, Cashless Fees, Unreleased Separation/Retirement Pay, Released Separation/Retirement Pay, Miscellaneous, Loans Payable, Vehicle Maintenance
