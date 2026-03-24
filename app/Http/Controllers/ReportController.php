@@ -49,11 +49,34 @@ class ReportController extends Controller
 
         $categories = ExpenseCategory::orderBy('name')->get();
 
+        $operationalNames = [
+            'Staff Payroll and Allowance', 'Store Supplies', "BIR & City Gov't Fees",
+            'Stocks Cost', 'Store Rental & CUSA', 'Pest Control', 'Hydro Lab',
+            'Tel, Cable, Internet & Cel.', 'Fuel', 'Office Equipments', 'Logistics',
+            'Commissary Rental & Electricity',
+        ];
+        $overheadNames = [
+            'Released 13th Month & SIL', 'Unreleased 13th Month', 'Store Maintenance',
+            'Equipment Maintenance', 'SSS Employer Share', 'Pag-ibig Employer Share',
+            'PHIC Employer Share', 'Representations', 'Other Expense',
+            'Service Incentive Leave(SIL)', "Retainer's Fee", 'Royalty Fee', 'Ads Fee',
+            'Ins., Renewals and Other Fees', 'Cashless Fees',
+            'Unreleased Separation/Retirement Pay', 'Released Separation/Retirement Pay',
+            'Miscellaneous', 'Loans Payable', 'Vehicle Maintenance',
+        ];
+
+        $operationalCats = $categories->filter(fn($c) => in_array($c->name, $operationalNames))->values();
+        $overheadCats    = $categories->filter(fn($c) => in_array($c->name, $overheadNames))->values();
+
         // Build matrix: category -> branch -> total
         $matrix = [];
-        $branchTotals    = [];
-        $categoryTotals  = [];
-        $grandTotal      = 0;
+        $branchTotals             = [];
+        $categoryTotals           = [];
+        $operationalBranchTotals  = [];
+        $overheadBranchTotals     = [];
+        $grandTotal               = 0;
+        $operationalGrandTotal    = 0;
+        $overheadGrandTotal       = 0;
 
         foreach ($categories as $cat) {
             $matrix[$cat->id] = [];
@@ -61,7 +84,9 @@ class ReportController extends Controller
         }
 
         foreach ($branches as $branch) {
-            $branchTotals[$branch->id] = 0;
+            $branchTotals[$branch->id]            = 0;
+            $operationalBranchTotals[$branch->id] = 0;
+            $overheadBranchTotals[$branch->id]    = 0;
 
             $period = ExpensePeriod::where('branch_id', $branch->id)
                 ->where('month', $month)
@@ -75,15 +100,27 @@ class ReportController extends Controller
                         ->where('category_id', $cat->id)
                         ->sum('amount');
                 }
-                $matrix[$cat->id][$branch->id]  = $amount;
-                $branchTotals[$branch->id]      += $amount;
-                $categoryTotals[$cat->id]       += $amount;
-                $grandTotal                     += $amount;
+                $matrix[$cat->id][$branch->id] = $amount;
+                $branchTotals[$branch->id]     += $amount;
+                $categoryTotals[$cat->id]      += $amount;
+                $grandTotal                    += $amount;
+
+                if (in_array($cat->name, $operationalNames)) {
+                    $operationalBranchTotals[$branch->id] += $amount;
+                    $operationalGrandTotal                += $amount;
+                } elseif (in_array($cat->name, $overheadNames)) {
+                    $overheadBranchTotals[$branch->id] += $amount;
+                    $overheadGrandTotal                += $amount;
+                }
             }
         }
 
         return view('reports.consolidated', compact(
-            'branches', 'categories', 'matrix', 'branchTotals', 'categoryTotals', 'grandTotal', 'year', 'month'
+            'branches', 'categories', 'operationalCats', 'overheadCats',
+            'matrix', 'branchTotals', 'categoryTotals', 'grandTotal',
+            'operationalBranchTotals', 'overheadBranchTotals',
+            'operationalGrandTotal', 'overheadGrandTotal',
+            'year', 'month'
         ));
     }
 

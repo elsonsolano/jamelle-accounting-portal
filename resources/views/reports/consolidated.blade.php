@@ -46,10 +46,16 @@
             </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
-            @foreach($categories as $cat)
+
+            {{-- ── Operational Expenses ──────────────────────────────────── --}}
+            <tr class="bg-blue-600 text-white">
+                <td class="px-3 py-2 font-bold uppercase tracking-wide text-xs sticky left-0 bg-blue-600"
+                    colspan="{{ $branches->count() + 2 }}">▌ Operational Expenses</td>
+            </tr>
+            @foreach($operationalCats as $cat)
                 @php $rowTotal = $categoryTotals[$cat->id] ?? 0; @endphp
                 <tr class="hover:bg-gray-50 {{ $rowTotal == 0 ? 'opacity-40' : '' }}">
-                    <td class="px-3 py-2 text-gray-700 sticky left-0 bg-white">{{ $cat->name }}</td>
+                    <td class="px-3 py-2 text-gray-700 sticky left-0 bg-white pl-5">{{ $cat->name }}</td>
                     @foreach($branches as $branch)
                         <td class="px-3 py-2 text-right tabular-nums text-gray-600">
                             @if(($matrix[$cat->id][$branch->id] ?? 0) > 0)
@@ -64,6 +70,53 @@
                     </td>
                 </tr>
             @endforeach
+            <tr class="bg-blue-50 font-bold text-xs border-t-2 border-blue-200">
+                <td class="px-3 py-2 text-blue-800 sticky left-0 bg-blue-50">Operational Subtotal</td>
+                @foreach($branches as $branch)
+                    <td class="px-3 py-2 text-right tabular-nums text-blue-800">
+                        {{ number_format($operationalBranchTotals[$branch->id] ?? 0, 2) }}
+                    </td>
+                @endforeach
+                <td class="px-3 py-2 text-right tabular-nums text-blue-900 bg-blue-100">
+                    {{ number_format($operationalGrandTotal, 2) }}
+                </td>
+            </tr>
+
+            {{-- ── Overhead Expenses ─────────────────────────────────────── --}}
+            <tr class="bg-amber-600 text-white">
+                <td class="px-3 py-2 font-bold uppercase tracking-wide text-xs sticky left-0 bg-amber-600"
+                    colspan="{{ $branches->count() + 2 }}">▌ Overhead Expenses</td>
+            </tr>
+            @foreach($overheadCats as $cat)
+                @php $rowTotal = $categoryTotals[$cat->id] ?? 0; @endphp
+                <tr class="hover:bg-gray-50 {{ $rowTotal == 0 ? 'opacity-40' : '' }}">
+                    <td class="px-3 py-2 text-gray-700 sticky left-0 bg-white pl-5">{{ $cat->name }}</td>
+                    @foreach($branches as $branch)
+                        <td class="px-3 py-2 text-right tabular-nums text-gray-600">
+                            @if(($matrix[$cat->id][$branch->id] ?? 0) > 0)
+                                {{ number_format($matrix[$cat->id][$branch->id], 2) }}
+                            @else
+                                <span class="text-gray-300">—</span>
+                            @endif
+                        </td>
+                    @endforeach
+                    <td class="px-3 py-2 text-right tabular-nums font-semibold text-indigo-700 bg-indigo-50">
+                        {{ number_format($rowTotal, 2) }}
+                    </td>
+                </tr>
+            @endforeach
+            <tr class="bg-amber-50 font-bold text-xs border-t-2 border-amber-200">
+                <td class="px-3 py-2 text-amber-800 sticky left-0 bg-amber-50">Overhead Subtotal</td>
+                @foreach($branches as $branch)
+                    <td class="px-3 py-2 text-right tabular-nums text-amber-800">
+                        {{ number_format($overheadBranchTotals[$branch->id] ?? 0, 2) }}
+                    </td>
+                @endforeach
+                <td class="px-3 py-2 text-right tabular-nums text-amber-900 bg-amber-100">
+                    {{ number_format($overheadGrandTotal, 2) }}
+                </td>
+            </tr>
+
         </tbody>
         <tfoot>
             <tr class="bg-gray-800 text-white font-bold text-xs">
