@@ -6,13 +6,27 @@ use GuzzleHttp\Client;
 
 class GmailService
 {
-    private string $accessToken;
+    private ?string $accessToken = null;
     private Client $http;
 
     public function __construct()
     {
-        $this->http        = new Client();
-        $this->accessToken = $this->refreshAccessToken();
+        // On Windows/WAMP, use local CA bundle; on Linux (Railway), use system default
+        $caBundle   = 'C:/wamp64/cacert.pem';
+        $verifyOption = file_exists($caBundle) ? $caBundle : true;
+
+        $this->http = new Client([
+            'verify' => $verifyOption,
+        ]);
+    }
+
+    private function getAccessToken(): string
+    {
+        if (!$this->accessToken) {
+            $this->accessToken = $this->refreshAccessToken();
+        }
+
+        return $this->accessToken;
     }
 
     // -------------------------------------------------------------------------
@@ -75,9 +89,9 @@ class GmailService
     public function fetchSettlementEmails(): array
     {
         $sender = config('services.google.paymaya_sender', 'noreply.settlement@maya.ph');
-        $query  = "from:{$sender} subject:\"SETTLEMENT BREAKDOWN\" is:unread";
+        $query  = "from:{$sender} subject:\"SETTLEMENT BREAKDOWN\" newer_than:2d";
 
-        $listResponse = $this->apiGet('https://gmail.googleapis.com/gmail/v1/users/me/messages', [
+        $listResponse = $this->apiGetPublic('https://gmail.googleapis.com/gmail/v1/users/me/messages', [
             'q'          => $query,
             'maxResults' => 20,
         ]);
@@ -87,7 +101,7 @@ class GmailService
 
         foreach ($messages as $msg) {
             $messageId = $msg['id'];
-            $full      = $this->apiGet("https://gmail.googleapis.com/gmail/v1/users/me/messages/{$messageId}", [
+            $full      = $this->apiGetPublic("https://gmail.googleapis.com/gmail/v1/users/me/messages/{$messageId}", [
                 'format' => 'full',
             ]);
 
@@ -126,7 +140,7 @@ class GmailService
                 $attachmentId = $part['body']['attachmentId'] ?? null;
 
                 if ($attachmentId) {
-                    $att  = $this->apiGet("https://gmail.googleapis.com/gmail/v1/users/me/messages/{$messageId}/attachments/{$attachmentId}");
+                    $att  = $this->apiGetPublic("https://gmail.googleapis.com/gmail/v1/users/me/messages/{$messageId}/attachments/{$attachmentId}");
                     $data = $att['data'] ?? '';
                     return base64_decode(strtr($data, '-_', '+/'));
                 }
@@ -136,10 +150,10 @@ class GmailService
         return null;
     }
 
-    private function apiGet(string $url, array $query = []): array
+    public function apiGetPublic(string $url, array $query = []): array
     {
         $response = $this->http->get($url, [
-            'headers' => ['Authorization' => 'Bearer ' . $this->accessToken],
+            'headers' => ['Authorization' => 'Bearer ' . $this->getAccessToken()],
             'query'   => $query,
         ]);
 
