@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class PassbookEntry extends Model
 {
     protected $fillable = [
-        'passbook_id', 'date', 'particulars', 'type', 'amount',
+        'passbook_id', 'date', 'particulars', 'type', 'amount', 'source',
         'linked_entry_id', 'expense_entry_id', 'created_by', 'updated_by',
     ];
 

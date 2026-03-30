@@ -54,7 +54,12 @@
                 <tr class="hover:bg-gray-50">
                     <td class="px-4 py-3 text-gray-500 whitespace-nowrap">{{ $entry->date->format('M d, Y') }}</td>
                     <td class="px-4 py-3 text-gray-800">
-                        {{ $entry->particulars }}
+                        <div class="flex items-center gap-2">
+                            {{ $entry->particulars }}
+                            @if($entry->source === 'paymaya_auto')
+                                <span class="inline-block px-1.5 py-0.5 rounded text-xs font-medium bg-violet-100 text-violet-700">Auto Sync</span>
+                            @endif
+                        </div>
                         @if($entry->linkedEntry)
                             <span class="text-xs text-gray-400 block">
                                 {{ in_array($entry->type, ['transfer_out']) ? '→' : '←' }}

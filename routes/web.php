@@ -6,6 +6,7 @@ use App\Http\Controllers\ExpenseEntryController;
 use App\Http\Controllers\GrossSalesController;
 use App\Http\Controllers\PassbookController;
 use App\Http\Controllers\PassbookEntryController;
+use App\Http\Controllers\PaymayaController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\SalesEntryController;
@@ -13,6 +14,9 @@ use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard');
+
+// Google OAuth callback (must be outside auth middleware)
+Route::get('/paymaya/auth/callback', [PaymayaController::class, 'handleGoogleCallback'])->name('paymaya.auth.callback');
 
 // Auth routes (Laravel Breeze / manual)
 Route::middleware('guest')->group(function () {
@@ -53,6 +57,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/sales-entries', [SalesEntryController::class, 'store'])->name('sales-entries.store');
     Route::put('/sales-entries/{salesEntry}', [SalesEntryController::class, 'update'])->name('sales-entries.update');
     Route::delete('/sales-entries/{salesEntry}', [SalesEntryController::class, 'destroy'])->name('sales-entries.destroy');
+
+    // PayMaya Sync
+    Route::get('/paymaya', [PaymayaController::class, 'index'])->name('paymaya.index');
+    Route::get('/paymaya/auth', [PaymayaController::class, 'redirectToGoogle'])->name('paymaya.auth');
+    Route::post('/paymaya/sync-now', [PaymayaController::class, 'syncNow'])->name('paymaya.sync-now');
+    Route::delete('/paymaya/imports/{import}', [PaymayaController::class, 'destroyImport'])->name('paymaya.destroy');
 
     // Passbooks
     Route::get('/passbooks', [PassbookController::class, 'index'])->name('passbooks.index');
