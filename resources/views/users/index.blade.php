@@ -19,6 +19,7 @@
                 <th class="px-4 py-3 text-left">Email</th>
                 <th class="px-4 py-3 text-left">Role</th>
                 <th class="px-4 py-3 text-left">Created</th>
+                <th class="px-4 py-3"></th>
             </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
@@ -40,10 +41,14 @@
                     <td class="px-4 py-3 text-gray-400 text-xs">
                         {{ $user->created_at->format('M d, Y') }}
                     </td>
+                    <td class="px-4 py-3 text-right">
+                        <a href="{{ route('users.edit', $user) }}"
+                           class="text-xs text-indigo-600 hover:underline">Edit</a>
+                    </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="4" class="px-4 py-8 text-center text-gray-400">No users found.</td>
+                    <td colspan="5" class="px-4 py-8 text-center text-gray-400">No users found.</td>
                 </tr>
             @endforelse
         </tbody>

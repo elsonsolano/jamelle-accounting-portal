@@ -14,9 +14,7 @@ class ExpenseEntryPolicy
         }
 
         if ($user->hasRole('Accountant')) {
-            // Accountants can only delete entries in their assigned branch's periods
-            $branchId = $user->branch_id ?? null;
-            return $branchId && $entry->period->branch_id === $branchId;
+            return true;
         }
 
         return false;

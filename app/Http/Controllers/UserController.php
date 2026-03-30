@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
 use Spatie\Permission\Models\Role;
 
@@ -34,5 +35,29 @@ class UserController extends Controller
 
         return redirect()->route('users.index')
             ->with('success', "User \"{$user->name}\" created successfully.");
+    }
+
+    public function edit(User $user)
+    {
+        $roles = Role::orderBy('name')->get();
+
+        return view('users.edit', compact('user', 'roles'));
+    }
+
+    public function update(UpdateUserRequest $request, User $user)
+    {
+        $user->update([
+            'name'  => $request->name,
+            'email' => $request->email,
+        ]);
+
+        if ($request->filled('password')) {
+            $user->update(['password' => $request->password]);
+        }
+
+        $user->syncRoles($request->role);
+
+        return redirect()->route('users.index')
+            ->with('success', "User \"{$user->name}\" updated successfully.");
     }
 }
