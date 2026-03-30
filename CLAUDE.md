@@ -28,6 +28,12 @@ php artisan migrate:fresh --seed
 
 # Seed only
 php artisan db:seed
+
+# Manually trigger PayMaya settlement sync
+php artisan paymaya:sync
+
+# Debug PayMaya email MIME structure and parser output
+php artisan paymaya:debug
 ```
 
 ## Architecture Overview
@@ -37,6 +43,7 @@ php artisan db:seed
 - **spatie/laravel-permission** for roles/permissions, **maatwebsite/excel** for import/export
 - Session driver: `database`. DB: MySQL `accounting_portal`, root, no password (local WAMP).
 - No Livewire — was removed due to instability. Do not reintroduce it.
+- No `google/apiclient` — Gmail API is called via raw Guzzle HTTP requests to avoid Windows path length issues with `google/apiclient-services`.
 
 ### Core Domain
 
@@ -46,6 +53,7 @@ The app tracks monthly expenses and sales per branch. The central entity chain i
 Branch → ExpensePeriod (branch + month + year, unique) → ExpenseEntry (expense rows)
                                                         → SalesEntry (sales rows)
                                                         → GrossSales (vat_itr per branch per period)
+       → Passbook (bank account per branch)             → PassbookEntry (ledger rows)
 ```
 
 `Branch` has an `is_cost_center` boolean. Cost center branches (Head Office) have expenses only — no sales, operating income, VAT/ITR, or net operating income.
@@ -102,7 +110,8 @@ This is the most complex page. It is a single Alpine.js component (`x-data="peri
 - **`SalesEntry`** follows the same `created_by`/`updated_by` boot pattern as `ExpenseEntry`. Sales are itemized entries — the total for a period is `SalesEntry::whereIn('period_id', ...)->sum('amount')`, not `GrossSales.amount`.
 - **`GrossSales`** stores `vat_itr` (decimal 15,2, default 0) per branch per period — this is the VAT/ITR estimate used by the Branch Summary report. The `amount` field on `GrossSales` is a legacy single-value field and is no longer the source of truth for sales totals.
 - All money columns are `decimal(15,2)`.
-- **`User`** has a nullable `branch_id` FK and a `branch()` BelongsTo relationship (used by `ExpenseEntryPolicy`).
+- **`User`** has a nullable `branch_id` FK and a `branch()` BelongsTo relationship.
+- **`PassbookEntry`** follows the same `created_by`/`updated_by` boot pattern. Has a `source` enum (`manual` | `paymaya_auto`) — auto-synced entries show an "Auto Sync" badge in the ledger view.
 
 ### Branch Summary Report (`/reports/branch-summary`)
 
@@ -117,12 +126,48 @@ Four roles (seeded via `RoleSeeder`):
 
 | Role | Access |
 |---|---|
-| **Superadmin** | `manage users` permission — can access `/users` (create/list users). No expense data bypass. |
+| **Superadmin** | `manage users` permission — can access `/users` (create/list/edit users). No expense data bypass. |
 | **Admin** | `Gate::before()` bypass in `AppServiceProvider` — full access to everything. |
-| **Accountant** | Can add/edit/delete expense entries scoped to their `branch_id` (`ExpenseEntryPolicy`). Can create expense periods (`ExpensePeriodPolicy`). |
+| **Accountant** | Can add/edit/delete expense entries on **any** branch (no branch restriction). Can create expense periods. |
 | **Viewer** | Read-only. |
 
 `@can('manage users')` in Blade is true for both Superadmin (explicit permission) and Admin (Gate::before bypass).
+
+### Passbooks (`/passbooks`)
+
+Bank account ledger per branch. Entity chain:
+
+```
+Passbook (branch_id, bank_name, account_number, opening_balance, opening_date)
+    → PassbookEntry (date, particulars, type, amount, source, linked_entry_id, expense_entry_id)
+```
+
+**Transaction types:** `deposit`, `withdrawal`, `transfer_in`, `transfer_out`, `bank_charge`, `interest`
+
+**Transfer cascade:** Creating a `transfer_out` auto-creates a paired `transfer_in` in the target passbook. Both entries store each other's ID in `linked_entry_id`. Editing or deleting either side cascades to the linked entry automatically.
+
+**Running balance** is computed in `PassbookController::show()` by iterating entries in date/id order from `opening_balance` — it is never stored.
+
+**Passbook creation** is restricted to Admin/Superadmin (`can:manage users`). All roles can view passbooks and add/edit/delete entries.
+
+### PayMaya Auto-Sync (`/paymaya`)
+
+Automatically fetches PayMaya settlement emails from Gmail and posts deposits to the matching passbooks.
+
+**Flow:**
+1. `GmailService` authenticates via OAuth2 refresh token (stored in `GOOGLE_REFRESH_TOKEN` env var), then searches Gmail for emails from `noreply.settlement@maya.ph` with subject containing `SETTLEMENT BREAKDOWN` sent within the last 2 days.
+2. The `.XLS` attachment is a UTF-16LE encoded HTML file disguised as Excel. `PaymayaSettlementParser` detects the BOM, converts to UTF-8, parses the HTML table, and extracts the `Amount credited` value per bank account (appears only on the first row of each bank account group).
+3. Bank accounts are matched to passbooks by last 4 digits: `**1001` → `account_number LIKE '%1001'`.
+4. Each matched bank account gets a `deposit` `PassbookEntry` with `source = paymaya_auto`.
+5. Every processed email is recorded in `paymaya_imports` (keyed by `gmail_message_id`). Re-processing the same email creates a `duplicate` status record — admin must manually review/delete.
+
+**Key env vars:** `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`, `GOOGLE_REFRESH_TOKEN`, `PAYMAYA_SENDER`
+
+**Gmail OAuth setup:** Visit `/paymaya` → Connect Gmail (one-time). Stores refresh token in `.env`. On Railway, copy the `GOOGLE_REFRESH_TOKEN` value to the environment variables.
+
+**Railway cron:** Add a Cron service with command `php artisan paymaya:sync` and schedule `0 8 * * 1-5` (Mon–Fri 8 AM).
+
+**SSL on Windows:** `GmailService` auto-detects `C:/wamp64/cacert.pem` for local WAMP; falls back to system CA bundle on Linux/Railway.
 
 ### Tailwind v4 Notes
 
