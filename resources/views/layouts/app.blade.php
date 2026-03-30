@@ -21,6 +21,7 @@
             <div class="flex items-center gap-6 text-sm font-medium text-gray-600">
                 <a href="{{ route('dashboard') }}" class="hover:text-indigo-600">Dashboard</a>
                 <a href="{{ route('expense-periods.index') }}" class="hover:text-indigo-600">Periods</a>
+                <a href="{{ route('passbooks.index') }}" class="hover:text-indigo-600">Passbooks</a>
                 <a href="{{ route('reports.consolidated') }}" class="hover:text-indigo-600">Consolidated</a>
                 <a href="{{ route('reports.branch-summary') }}" class="hover:text-indigo-600">Branch Summary</a>
                 @can('manage users')

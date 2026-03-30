@@ -4,6 +4,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExpensePeriodController;
 use App\Http\Controllers\ExpenseEntryController;
 use App\Http\Controllers\GrossSalesController;
+use App\Http\Controllers\PassbookController;
+use App\Http\Controllers\PassbookEntryController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\SalesEntryController;
@@ -51,6 +53,17 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/sales-entries', [SalesEntryController::class, 'store'])->name('sales-entries.store');
     Route::put('/sales-entries/{salesEntry}', [SalesEntryController::class, 'update'])->name('sales-entries.update');
     Route::delete('/sales-entries/{salesEntry}', [SalesEntryController::class, 'destroy'])->name('sales-entries.destroy');
+
+    // Passbooks
+    Route::get('/passbooks', [PassbookController::class, 'index'])->name('passbooks.index');
+    Route::get('/passbooks/create', [PassbookController::class, 'create'])->name('passbooks.create')->middleware('can:manage users');
+    Route::post('/passbooks', [PassbookController::class, 'store'])->name('passbooks.store')->middleware('can:manage users');
+    Route::get('/passbooks/{passbook}', [PassbookController::class, 'show'])->name('passbooks.show');
+    Route::get('/passbooks/{passbook}/entries/create', [PassbookEntryController::class, 'create'])->name('passbook-entries.create');
+    Route::post('/passbooks/{passbook}/entries', [PassbookEntryController::class, 'store'])->name('passbook-entries.store');
+    Route::get('/passbook-entries/{passbookEntry}/edit', [PassbookEntryController::class, 'edit'])->name('passbook-entries.edit');
+    Route::put('/passbook-entries/{passbookEntry}', [PassbookEntryController::class, 'update'])->name('passbook-entries.update');
+    Route::delete('/passbook-entries/{passbookEntry}', [PassbookEntryController::class, 'destroy'])->name('passbook-entries.destroy');
 
     // User management (Superadmin + Admin)
     Route::middleware('can:manage users')->group(function () {
