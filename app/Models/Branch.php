@@ -20,4 +20,9 @@ class Branch extends Model
     {
         return $this->hasMany(GrossSales::class);
     }
+
+    public function passbooks(): HasMany
+    {
+        return $this->hasMany(Passbook::class);
+    }
 }
