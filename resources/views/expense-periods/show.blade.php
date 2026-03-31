@@ -6,7 +6,7 @@
 <div x-data="periodApp()" x-init="init()">
 
 {{-- ── Header ─────────────────────────────────────────────────────────────── --}}
-<div class="flex items-start justify-between mb-5">
+<div class="flex flex-wrap items-start justify-between gap-2 mb-5">
     <div>
         <div class="flex items-center gap-2 text-sm text-gray-400 mb-1">
             <a href="{{ route('expense-periods.index') }}" class="hover:text-indigo-600 hover:underline">← Periods</a>
@@ -56,21 +56,21 @@
      EXPENSES TAB
      ══════════════════════════════════════════════════════════════════════════ --}}
 <div x-show="activeTab === 'expenses'" x-cloak>
-<div class="flex gap-5 items-start">
+<div class="flex flex-col lg:flex-row gap-5 items-start">
 
     {{-- Left: Expense Sheet --}}
     <div class="flex-1 min-w-0">
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
 
             {{-- Sheet header --}}
-            <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between gap-3">
+            <div class="px-4 py-3 border-b border-gray-100 flex flex-wrap items-center gap-2">
                 <h2 class="font-semibold text-gray-700 text-sm uppercase tracking-wide shrink-0">Expense Entries</h2>
-                <div class="flex-1 max-w-xs">
+                <div class="flex-1 min-w-32">
                     <input type="text" x-model="search"
-                           placeholder="Search category or particular…"
+                           placeholder="Search…"
                            class="w-full text-xs border-gray-300 rounded focus:ring-indigo-400 px-2 py-1.5">
                 </div>
-                <div class="flex items-center gap-3 shrink-0">
+                <div class="flex items-center gap-2 shrink-0">
                     <span x-show="search" class="text-xs text-indigo-600"
                           x-text="filteredEntries.length + ' match' + (filteredEntries.length === 1 ? '' : 'es')"></span>
                     <span x-show="!search" class="text-xs text-gray-400"
@@ -79,7 +79,7 @@
                             class="text-xs text-gray-400 hover:text-gray-600">&times; Clear</button>
                     <button type="button" @click="showImport = !showImport"
                             class="text-xs px-2 py-1 rounded border border-indigo-300 text-indigo-600 hover:bg-indigo-50"
-                            x-text="showImport ? 'Cancel Import' : 'Import JSON'"></button>
+                            x-text="showImport ? 'Cancel' : 'Import JSON'"></button>
                 </div>
             </div>
 
@@ -210,14 +210,14 @@
             {{-- Add Entry Form --}}
             <div class="border-t border-gray-200 bg-gray-50 px-3 py-3">
                 <p class="text-xs font-semibold text-gray-500 uppercase mb-2">Add Entry</p>
-                <div class="grid grid-cols-12 gap-2 items-start">
-                    <div class="col-span-2">
+                <div class="grid grid-cols-2 lg:grid-cols-12 gap-2 items-start">
+                    <div class="col-span-1 lg:col-span-2">
                         <input type="date" x-model="newForm.date"
                                :class="newErrors.date ? 'border-red-400' : 'border-gray-300'"
                                class="w-full text-xs rounded focus:ring-indigo-400 px-2 py-1.5">
                         <span x-show="newErrors.date" class="text-red-500 text-xs" x-text="newErrors.date"></span>
                     </div>
-                    <div class="col-span-2">
+                    <div class="col-span-1 lg:col-span-2">
                         <select x-model="newForm.category_id"
                                 :class="newErrors.category_id ? 'border-red-400' : 'border-gray-300'"
                                 class="w-full text-xs rounded focus:ring-indigo-400 px-2 py-1.5">
@@ -228,23 +228,23 @@
                         </select>
                         <span x-show="newErrors.category_id" class="text-red-500 text-xs" x-text="newErrors.category_id"></span>
                     </div>
-                    <div class="col-span-3">
+                    <div class="col-span-2 lg:col-span-3">
                         <input type="text" x-model="newForm.particular" placeholder="Particular"
                                :class="newErrors.particular ? 'border-red-400' : 'border-gray-300'"
                                class="w-full text-xs rounded focus:ring-indigo-400 px-2 py-1.5">
                         <span x-show="newErrors.particular" class="text-red-500 text-xs" x-text="newErrors.particular"></span>
                     </div>
-                    <div class="col-span-2">
+                    <div class="col-span-1 lg:col-span-2">
                         <input type="number" x-model="newForm.amount" step="0.01" placeholder="Amount"
                                :class="newErrors.amount ? 'border-red-400' : 'border-gray-300'"
                                class="w-full text-xs rounded focus:ring-indigo-400 px-2 py-1.5 text-right">
                         <span x-show="newErrors.amount" class="text-red-500 text-xs" x-text="newErrors.amount"></span>
                     </div>
-                    <div class="col-span-2">
+                    <div class="col-span-1 lg:col-span-2">
                         <input type="text" x-model="newForm.notes" placeholder="Notes (optional)"
                                class="w-full text-xs border-gray-300 rounded focus:ring-indigo-400 px-2 py-1.5">
                     </div>
-                    <div class="col-span-1 flex items-start pt-0.5">
+                    <div class="col-span-2 lg:col-span-1 flex items-start pt-0.5">
                         <button type="button" @click="addEntry()"
                                 class="w-full bg-indigo-600 text-white text-xs px-3 py-1.5 rounded hover:bg-indigo-700">
                             Add
@@ -257,7 +257,7 @@
     </div>
 
     {{-- Right sidebar --}}
-    <div class="w-80 shrink-0 space-y-4">
+    <div class="w-full lg:w-80 lg:shrink-0 space-y-4">
 
         {{-- Operational Expenses --}}
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -377,10 +377,10 @@
 <div x-show="activeTab === 'sales'" x-cloak>
 
     {{-- Sales total card + add form --}}
-    <div class="flex gap-5 items-start mb-5">
+    <div class="flex flex-col sm:flex-row gap-5 items-start mb-5">
 
         {{-- Add Entry Form --}}
-        <div class="flex-1 bg-white border border-gray-200 rounded-lg shadow-sm p-5">
+        <div class="flex-1 w-full bg-white border border-gray-200 rounded-lg shadow-sm p-5">
             <h2 class="text-sm font-semibold text-gray-700 mb-4">Add Daily Sales Entry</h2>
             <div class="flex flex-wrap gap-3 items-end">
                 <div>
@@ -412,7 +412,7 @@
         </div>
 
         {{-- Total card --}}
-        <div class="shrink-0 bg-emerald-50 border border-emerald-200 rounded-lg px-6 py-4 text-right min-w-48">
+        <div class="w-full sm:shrink-0 sm:w-auto bg-emerald-50 border border-emerald-200 rounded-lg px-6 py-4 text-right min-w-48">
             <p class="text-xs text-emerald-600 font-medium uppercase tracking-wide">Total Gross Sales</p>
             <p class="text-2xl font-bold text-emerald-700 tabular-nums mt-1" x-text="'₱' + fmt(salesTotal)"></p>
             <p class="text-xs text-emerald-500 mt-1" x-text="salesEntries.length + ' day(s) encoded'"></p>

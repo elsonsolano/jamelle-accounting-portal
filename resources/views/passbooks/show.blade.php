@@ -3,7 +3,7 @@
 
 @section('content')
 
-<div class="flex items-center justify-between mb-4">
+<div class="flex flex-wrap items-start justify-between gap-3 mb-4">
     <div>
         <a href="{{ route('passbooks.index') }}" class="text-sm text-gray-500 hover:underline">&larr; All Passbooks</a>
         <h1 class="text-xl font-bold text-gray-800 mt-1">
@@ -20,13 +20,14 @@
             <div class="text-lg font-bold text-indigo-700">₱{{ $passbook->currentBalance() }}</div>
         </div>
         <a href="{{ route('passbook-entries.create', $passbook) }}"
-           class="text-sm bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
+           class="text-sm bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 whitespace-nowrap">
             + Add Transaction
         </a>
     </div>
 </div>
 
 <div class="bg-white rounded shadow border border-gray-100 overflow-hidden">
+    <div class="overflow-x-auto">
     <table class="min-w-full text-sm">
         <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
             <tr>
@@ -112,6 +113,7 @@
             @endforelse
         </tbody>
     </table>
+    </div>{{-- /overflow-x-auto --}}
 </div>
 
 @endsection

@@ -2,7 +2,7 @@
 @section('title', 'Expense Periods')
 
 @section('content')
-<div class="flex items-center justify-between mb-6">
+<div class="flex flex-wrap items-center justify-between gap-2 mb-6">
     <h1 class="text-xl font-bold text-gray-800">Expense Periods</h1>
     @can('create', \App\Models\ExpensePeriod::class)
         <a href="{{ route('expense-periods.create') }}"
@@ -49,6 +49,7 @@
 </form>
 
 <div class="bg-white rounded shadow overflow-hidden border border-gray-100">
+    <div class="overflow-x-auto">
     <table class="min-w-full text-sm">
         <thead class="bg-gray-50 text-gray-600 uppercase text-xs">
             <tr>
@@ -102,6 +103,7 @@
             @endforelse
         </tbody>
     </table>
+    </div>{{-- /overflow-x-auto --}}
 </div>
 
 <div class="mt-4">

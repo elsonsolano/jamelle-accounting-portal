@@ -2,7 +2,7 @@
 @section('title', 'Branch Income Summary')
 
 @section('content')
-<div class="flex items-center justify-between mb-6">
+<div class="flex flex-wrap items-center justify-between gap-2 mb-6">
     <h1 class="text-xl font-bold text-gray-800">Branch Income Summary</h1>
     <span class="text-sm text-gray-500 font-medium">
         @if($isSingleMonth)
@@ -16,7 +16,7 @@
 </div>
 
 {{-- Filters --}}
-<form method="GET" class="flex flex-wrap gap-4 mb-6 bg-white p-4 rounded shadow-sm border border-gray-100 items-end">
+<form method="GET" class="flex flex-col sm:flex-row flex-wrap gap-4 mb-6 bg-white p-4 rounded shadow-sm border border-gray-100 items-start sm:items-end">
 
     {{-- Preset pills --}}
     <div class="flex flex-wrap gap-2 items-center">
@@ -38,7 +38,7 @@
         @endforeach
     </div>
 
-    <div class="flex gap-3 items-end ml-auto flex-wrap">
+    <div class="flex gap-3 items-end sm:ml-auto flex-wrap">
         {{-- From --}}
         <div>
             <label class="block text-xs text-gray-500 mb-1">From</label>

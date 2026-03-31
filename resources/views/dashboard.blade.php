@@ -4,7 +4,7 @@
 @section('content')
 
 {{-- ── Header ─────────────────────────────────────────────────────────────── --}}
-<div class="flex items-center justify-between mb-6">
+<div class="flex flex-wrap items-center justify-between gap-2 mb-6">
     <div>
         <h1 class="text-2xl font-bold text-gray-800">
             @php
@@ -70,7 +70,7 @@
 </div>
 
 {{-- ── Main Content ─────────────────────────────────────────────────────────── --}}
-<div class="flex gap-6 items-start">
+<div class="flex flex-col lg:flex-row gap-6 items-start">
 
     {{-- Left: Tables --}}
     <div class="flex-1 min-w-0 space-y-5">
@@ -84,6 +84,7 @@
                 </div>
                 <a href="{{ route('expense-periods.index') }}" class="text-xs text-indigo-600 hover:underline">View all periods →</a>
             </div>
+            <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
                 <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
                     <tr>
@@ -152,6 +153,7 @@
                 </tfoot>
                 @endif
             </table>
+            </div>{{-- /overflow-x-auto --}}
         </div>
 
         {{-- Overhead / Cost Centers --}}
@@ -163,6 +165,7 @@
                     <p class="text-xs text-amber-500 mt-0.5">Not included in operating income · {{ $now->format('F Y') }}</p>
                 </div>
             </div>
+            <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
                 <thead class="bg-amber-50 text-amber-600 text-xs uppercase">
                     <tr>
@@ -201,6 +204,7 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>{{-- /overflow-x-auto --}}
         </div>
         @endif
 
@@ -225,7 +229,7 @@
     </div>
 
     {{-- Right: Recent Activity --}}
-    <div class="w-80 shrink-0 space-y-4">
+    <div class="w-full lg:w-80 lg:shrink-0 space-y-4">
 
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div class="px-4 py-3.5 border-b border-gray-100 flex items-center justify-between">

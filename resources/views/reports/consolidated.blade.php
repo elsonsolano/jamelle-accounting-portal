@@ -2,7 +2,7 @@
 @section('title', 'Consolidated Expense Report')
 
 @section('content')
-<div class="flex items-center justify-between mb-6">
+<div class="flex flex-wrap items-center justify-between gap-2 mb-6">
     <h1 class="text-xl font-bold text-gray-800">Consolidated Expense Report</h1>
     <button onclick="window.print()"
             class="flex items-center gap-2 bg-gray-700 text-white text-sm px-4 py-2 rounded hover:bg-gray-800 no-print">
