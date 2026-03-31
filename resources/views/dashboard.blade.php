@@ -76,7 +76,7 @@
     <div class="flex-1 min-w-0 space-y-5">
 
         {{-- Revenue Branches --}}
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm">
             <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
                 <div>
                     <h2 class="font-semibold text-gray-800">Branch Performance</h2>
@@ -158,7 +158,7 @@
 
         {{-- Overhead / Cost Centers --}}
         @if($costCenters->count() > 0)
-        <div class="bg-white rounded-xl border border-amber-200 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-xl border border-amber-200 shadow-sm">
             <div class="px-5 py-4 border-b border-amber-100 flex items-center justify-between bg-amber-50">
                 <div>
                     <h2 class="font-semibold text-amber-800">Overhead / Cost Centers</h2>

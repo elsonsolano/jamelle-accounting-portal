@@ -48,7 +48,7 @@
     </div>
 </form>
 
-<div class="bg-white rounded shadow overflow-hidden border border-gray-100">
+<div class="bg-white rounded shadow border border-gray-100">
     <div class="overflow-x-auto">
     <table class="min-w-full text-sm">
         <thead class="bg-gray-50 text-gray-600 uppercase text-xs">

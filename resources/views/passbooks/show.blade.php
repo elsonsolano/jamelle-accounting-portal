@@ -26,7 +26,7 @@
     </div>
 </div>
 
-<div class="bg-white rounded shadow border border-gray-100 overflow-hidden">
+<div class="bg-white rounded shadow border border-gray-100">
     <div class="overflow-x-auto">
     <table class="min-w-full text-sm">
         <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
