@@ -56,7 +56,7 @@
      EXPENSES TAB
      ══════════════════════════════════════════════════════════════════════════ --}}
 <div x-show="activeTab === 'expenses'" x-cloak>
-<div class="flex flex-col lg:flex-row gap-5 items-start">
+<div class="flex flex-col lg:flex-row gap-5 lg:items-start">
 
     {{-- Left: Expense Sheet --}}
     <div class="flex-1 min-w-0">

@@ -70,7 +70,7 @@
 </div>
 
 {{-- ── Main Content ─────────────────────────────────────────────────────────── --}}
-<div class="flex flex-col lg:flex-row gap-6 items-start">
+<div class="flex flex-col lg:flex-row gap-6 lg:items-start">
 
     {{-- Left: Tables --}}
     <div class="flex-1 min-w-0 space-y-5">
