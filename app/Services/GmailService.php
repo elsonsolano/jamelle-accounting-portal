@@ -88,8 +88,10 @@ class GmailService
      */
     public function fetchSettlementEmails(): array
     {
-        $sender = config('services.google.paymaya_sender', 'noreply.settlement@maya.ph');
-        $query  = "from:{$sender} subject:\"SETTLEMENT BREAKDOWN\" newer_than:2d";
+        $sender   = config('services.google.paymaya_sender', 'noreply.settlement@maya.ph');
+        $today    = now()->format('Y/m/d');
+        $tomorrow = now()->addDay()->format('Y/m/d');
+        $query    = "from:{$sender} subject:\"SETTLEMENT BREAKDOWN\" after:{$today} before:{$tomorrow}";
 
         $listResponse = $this->apiGetPublic('https://gmail.googleapis.com/gmail/v1/users/me/messages', [
             'q'          => $query,
