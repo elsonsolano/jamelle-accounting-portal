@@ -27,7 +27,7 @@
 <div class="mb-6 p-4 rounded border {{ $hasRefreshToken ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200' }}">
     <div class="flex items-center gap-2 text-sm">
         <span class="{{ $hasRefreshToken ? 'text-green-700' : 'text-yellow-700' }} font-medium">
-            {{ $hasRefreshToken ? '● Gmail Connected — cron job runs Mon–Fri automatically' : '● Gmail Not Connected — click "Connect Gmail" to authorize' }}
+            {{ $hasRefreshToken ? '● Gmail Connected — System Crawl runs every Mon-Fri, 11PM automatically.' : '● Gmail Not Connected — click "Connect Gmail" to authorize' }}
         </span>
     </div>
 </div>
