@@ -155,7 +155,7 @@ Passbook (branch_id, bank_name, account_number, opening_balance, opening_date)
 Automatically fetches PayMaya settlement emails from Gmail and posts deposits to the matching passbooks.
 
 **Flow:**
-1. `GmailService` authenticates via OAuth2 refresh token (stored in `GOOGLE_REFRESH_TOKEN` env var), then searches Gmail for emails from `noreply.settlement@maya.ph` with subject containing `SETTLEMENT BREAKDOWN` sent within the last 2 days.
+1. `GmailService` authenticates via OAuth2 refresh token (stored in `GOOGLE_REFRESH_TOKEN` env var), then searches Gmail for emails from `noreply.settlement@maya.ph` with subject containing `SETTLEMENT BREAKDOWN` sent today.
 2. The `.XLS` attachment is a UTF-16LE encoded HTML file disguised as Excel. `PaymayaSettlementParser` detects the BOM, converts to UTF-8, parses the HTML table, and extracts the `Amount credited` value per bank account (appears only on the first row of each bank account group).
 3. Bank accounts are matched to passbooks by last 4 digits: `**1001` → `account_number LIKE '%1001'`.
 4. Each matched bank account gets a `deposit` `PassbookEntry` with `source = paymaya_auto`.
@@ -168,6 +168,32 @@ Automatically fetches PayMaya settlement emails from Gmail and posts deposits to
 **Railway cron:** Add a Cron service with command `php artisan paymaya:sync` and schedule `0 8 * * 1-5` (Mon–Fri 8 AM).
 
 **SSL on Windows:** `GmailService` auto-detects `C:/wamp64/cacert.pem` for local WAMP; falls back to system CA bundle on Linux/Railway.
+
+### Mobile Responsiveness
+
+The app is fully mobile-responsive. Two patterns are used consistently — follow them when adding new pages or layouts:
+
+**Stacked sidebar layouts** — any page with a main content area + right sidebar uses:
+```html
+<div class="flex flex-col lg:flex-row gap-5 lg:items-start">
+    <div class="flex-1 min-w-0">...</div>      {{-- main content --}}
+    <div class="w-full lg:w-80 lg:shrink-0">...</div>  {{-- sidebar --}}
+</div>
+```
+`lg:items-start` (not `items-start`) is critical — `items-start` in `flex-col` mode prevents children from stretching full width, which breaks `overflow-x-auto` on inner tables.
+
+**Tables inside cards** — do NOT put `overflow-hidden` on the card wrapper if the table needs horizontal scroll. Use an inner wrapper instead:
+```html
+<div class="bg-white rounded-xl border ...">   {{-- no overflow-hidden --}}
+    <div class="px-5 py-4 ...">card header</div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full ...">...</table>
+    </div>
+</div>
+```
+`overflow-hidden` on a parent clips the child's scroll container, making `overflow-x-auto` silently fail.
+
+**Navigation** — `layouts/app.blade.php` has a hamburger menu (`x-data="{ navOpen: false }"`) that shows/hides on mobile. Desktop nav uses `hidden md:flex`.
 
 ### Tailwind v4 Notes
 
