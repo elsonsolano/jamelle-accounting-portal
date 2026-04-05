@@ -132,6 +132,55 @@ class VoiceApiController extends Controller
         return response()->json($branchSlug ? $result[0] : $result);
     }
 
+    public function sales(Request $request)
+    {
+        $branchSlug = $request->input('branch');
+        $date       = $request->input('date');   // e.g. 2026-03-15
+        $from       = $request->input('from');   // e.g. 2026-03-01
+        $to         = $request->input('to');     // e.g. 2026-03-31
+
+        $branchQuery = Branch::where('is_cost_center', false)->orderBy('name');
+        if ($branchSlug) {
+            $branchQuery->whereRaw('LOWER(REPLACE(name, " ", "-")) = ?', [strtolower($branchSlug)]);
+        }
+        $branches = $branchQuery->get();
+
+        if ($branchSlug && $branches->isEmpty()) {
+            return response()->json(['error' => 'Branch not found'], 404);
+        }
+
+        $result = [];
+        foreach ($branches as $branch) {
+            $periodIds = ExpensePeriod::where('branch_id', $branch->id)->pluck('id');
+
+            $query = SalesEntry::whereIn('period_id', $periodIds)->orderBy('date');
+
+            if ($date) {
+                $query->whereDate('date', $date);
+            } elseif ($from && $to) {
+                $query->whereBetween('date', [$from, $to]);
+            } elseif ($from) {
+                $query->whereDate('date', '>=', $from);
+            } elseif ($to) {
+                $query->whereDate('date', '<=', $to);
+            }
+
+            $entries = $query->get();
+
+            $result[] = [
+                'branch'      => $branch->name,
+                'total_sales' => (float) $entries->sum('amount'),
+                'entries'     => $entries->map(fn($e) => [
+                    'date'   => $e->date->format('Y-m-d'),
+                    'amount' => (float) $e->amount,
+                    'notes'  => $e->notes,
+                ]),
+            ];
+        }
+
+        return response()->json($branchSlug ? $result[0] : $result);
+    }
+
     private function monthName(int $month): string
     {
         return \DateTime::createFromFormat('!m', $month)->format('F');
