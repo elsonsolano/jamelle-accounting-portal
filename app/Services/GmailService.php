@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\AppSetting;
 use GuzzleHttp\Client;
 
 class GmailService
@@ -68,14 +69,19 @@ class GmailService
             'form_params' => [
                 'client_id'     => config('services.google.client_id'),
                 'client_secret' => config('services.google.client_secret'),
-                'refresh_token' => config('services.google.refresh_token'),
+                'refresh_token' => AppSetting::get('google_refresh_token', config('services.google.refresh_token')),
                 'grant_type'    => 'refresh_token',
             ],
         ]);
 
         $data = json_decode($response->getBody()->getContents(), true);
 
-        return $data['access_token'];
+        return $data['access_token'] ?? throw new \RuntimeException('Failed to obtain access token from Google.');
+    }
+
+    public function hasRefreshToken(): bool
+    {
+        return !empty(AppSetting::get('google_refresh_token'));
     }
 
     // -------------------------------------------------------------------------

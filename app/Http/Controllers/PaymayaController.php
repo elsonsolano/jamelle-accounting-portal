@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AppSetting;
 use App\Models\PaymayaImport;
 use App\Services\GmailService;
 use Illuminate\Http\Request;
@@ -16,7 +17,7 @@ class PaymayaController extends Controller
             ->orderByDesc('id')
             ->paginate(20);
 
-        $hasRefreshToken = !empty(config('services.google.refresh_token'));
+        $hasRefreshToken = !empty(AppSetting::get('google_refresh_token', config('services.google.refresh_token')));
 
         return view('paymaya.index', compact('imports', 'hasRefreshToken'));
     }
@@ -36,14 +37,13 @@ class PaymayaController extends Controller
 
         if (empty($token['refresh_token'])) {
             return redirect()->route('paymaya.index')
-                ->with('error', 'No refresh token returned. Please revoke access in your Google account and try again.');
+                ->with('error', 'No refresh token returned. Please revoke app access at myaccount.google.com/permissions and try again.');
         }
 
-        // Write refresh token to .env
-        $this->setEnvValue('GOOGLE_REFRESH_TOKEN', $token['refresh_token']);
+        AppSetting::set('google_refresh_token', $token['refresh_token']);
 
         return redirect()->route('paymaya.index')
-            ->with('success', 'Gmail connected successfully! The cron job will now sync PayMaya settlements automatically.');
+            ->with('success', 'Gmail connected successfully! The refresh token has been saved.');
     }
 
     public function syncNow()
@@ -68,19 +68,5 @@ class PaymayaController extends Controller
 
         return redirect()->route('paymaya.index')
             ->with('success', 'Import and its passbook entries deleted.');
-    }
-
-    private function setEnvValue(string $key, string $value): void
-    {
-        $envPath    = base_path('.env');
-        $envContent = file_get_contents($envPath);
-
-        if (str_contains($envContent, "{$key}=")) {
-            $envContent = preg_replace("/^{$key}=.*/m", "{$key}={$value}", $envContent);
-        } else {
-            $envContent .= "\n{$key}={$value}";
-        }
-
-        file_put_contents($envPath, $envContent);
     }
 }

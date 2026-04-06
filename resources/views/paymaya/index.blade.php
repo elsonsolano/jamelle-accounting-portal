@@ -14,12 +14,11 @@
                     Sync Now
                 </button>
             </form>
-        @else
-            <a href="{{ route('paymaya.auth') }}"
-               class="text-sm bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-                Connect Gmail
-            </a>
         @endif
+        <a href="{{ route('paymaya.auth') }}"
+           class="text-sm bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+            {{ $hasRefreshToken ? 'Reconnect Gmail' : 'Connect Gmail' }}
+        </a>
     </div>
 </div>
 
