@@ -68,6 +68,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/passbooks', [PassbookController::class, 'index'])->name('passbooks.index');
     Route::get('/passbooks/create', [PassbookController::class, 'create'])->name('passbooks.create')->middleware('can:manage users');
     Route::post('/passbooks', [PassbookController::class, 'store'])->name('passbooks.store')->middleware('can:manage users');
+    Route::patch('/passbooks/{passbook}', [PassbookController::class, 'update'])->name('passbooks.update')->middleware('can:manage users');
     Route::get('/passbooks/{passbook}', [PassbookController::class, 'show'])->name('passbooks.show');
     Route::get('/passbooks/{passbook}/entries/create', [PassbookEntryController::class, 'create'])->name('passbook-entries.create');
     Route::post('/passbooks/{passbook}/entries', [PassbookEntryController::class, 'store'])->name('passbook-entries.store');

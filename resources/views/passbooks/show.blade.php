@@ -43,10 +43,32 @@
         <tbody class="divide-y divide-gray-100">
 
             {{-- Opening Balance Row --}}
-            <tr class="bg-gray-50">
+            <tr class="bg-gray-50" x-data="{ editing: false, amount: '{{ $passbook->opening_balance }}' }">
                 <td class="px-4 py-2 text-gray-400 text-xs">{{ $passbook->opening_date->format('M d, Y') }}</td>
                 <td class="px-4 py-2 text-gray-500 text-xs italic" colspan="4">Opening Balance</td>
-                <td class="px-4 py-2 text-right font-semibold text-gray-700">₱{{ number_format($passbook->opening_balance, 2) }}</td>
+                <td class="px-4 py-2 text-right font-semibold text-gray-700">
+                    <span x-show="!editing" class="group inline-flex items-center justify-end gap-1">
+                        ₱{{ number_format($passbook->opening_balance, 2) }}
+                        @can('manage users')
+                        <button @click="editing = true" class="text-gray-300 hover:text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity" title="Edit opening balance">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+                            </svg>
+                        </button>
+                        @endcan
+                    </span>
+                    @can('manage users')
+                    <form x-show="editing" method="POST" action="{{ route('passbooks.update', $passbook) }}" class="inline-flex items-center gap-1 justify-end" @click.stop>
+                        @csrf
+                        @method('PATCH')
+                        <input type="number" name="opening_balance" x-model="amount" step="0.01" min="0"
+                               class="w-32 text-right text-sm border border-indigo-300 rounded px-2 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                               @keydown.escape="editing = false">
+                        <button type="submit" class="text-xs text-white bg-indigo-600 hover:bg-indigo-700 px-2 py-0.5 rounded">Save</button>
+                        <button type="button" @click="editing = false" class="text-xs text-gray-500 hover:text-gray-700 px-1 py-0.5">Cancel</button>
+                    </form>
+                    @endcan
+                </td>
                 <td></td>
             </tr>
 

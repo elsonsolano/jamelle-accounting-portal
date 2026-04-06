@@ -39,6 +39,18 @@ class PassbookController extends Controller
             ->with('success', "Passbook \"{$passbook->label()}\" created successfully.");
     }
 
+    public function update(Request $request, Passbook $passbook)
+    {
+        $data = $request->validate([
+            'opening_balance' => ['required', 'numeric', 'min:0'],
+        ]);
+
+        $passbook->update($data);
+
+        return redirect()->route('passbooks.show', $passbook)
+            ->with('success', 'Opening balance updated.');
+    }
+
     public function show(Passbook $passbook)
     {
         $passbook->load(['branch', 'entries.creator', 'entries.updater', 'entries.linkedEntry.passbook.branch']);
