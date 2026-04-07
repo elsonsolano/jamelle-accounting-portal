@@ -94,6 +94,8 @@ Route::middleware(['auth'])->group(function () {
     // Deposit Slip Submissions (Messenger Bot)
     Route::get('/deposit-slips', [MessengerController::class, 'submissions'])->name('deposit-slips.index');
     Route::get('/deposit-slips/{submission}/image', [MessengerController::class, 'serveImage'])->name('deposit-slips.image');
+    Route::put('/deposit-slips/{submission}', [MessengerController::class, 'update'])->name('deposit-slips.update');
+    Route::post('/deposit-slips/{submission}/reject', [MessengerController::class, 'reject'])->name('deposit-slips.reject');
     Route::post('/deposit-slips/{submission}/review', [MessengerController::class, 'markReviewed'])->name('deposit-slips.review');
 
     // Reports

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Branch;
 use App\Models\DepositSlipSubmission;
 use App\Models\MessengerStaff;
+use App\Models\PassbookEntry;
 use App\Services\DepositSlipParserService;
 use App\Services\MessengerService;
 use GuzzleHttp\Client;
@@ -234,6 +235,93 @@ class MessengerController extends Controller
         return hash_equals($expected, $signature);
     }
 
+    // ── Admin: update a submission (correct fields + manage passbook entry) ─
+    public function update(Request $request, DepositSlipSubmission $submission)
+    {
+        $data = $request->validate([
+            'bank_name'        => 'nullable|string|max:100',
+            'account_number'   => 'nullable|string|max:50',
+            'amount'           => 'nullable|numeric|min:0',
+            'deposit_date'     => 'nullable|date',
+            'reference_number' => 'nullable|string|max:100',
+            'passbook_id'      => 'nullable|exists:passbooks,id',
+        ]);
+
+        // Strip special chars from account number
+        if (!empty($data['account_number'])) {
+            $data['account_number'] = preg_replace('/[^0-9]/', '', $data['account_number']);
+        }
+
+        $newPassbookId = $data['passbook_id'] ?? null;
+
+        // If passbook changed or newly assigned, manage passbook entries
+        if ($newPassbookId != $submission->passbook_id) {
+            // Delete old passbook entry if it exists
+            if ($submission->passbook_entry_id) {
+                PassbookEntry::find($submission->passbook_entry_id)?->delete();
+                $data['passbook_entry_id'] = null;
+            }
+
+            // Create new passbook entry if passbook selected and amount present
+            $amount = $data['amount'] ?? $submission->amount;
+            if ($newPassbookId && $amount) {
+                $passbook    = \App\Models\Passbook::find($newPassbookId);
+                $staffName   = $submission->staff?->fb_name ?? 'Messenger Bot';
+                $branchName  = $submission->branch?->name ?? '';
+                $entry       = new PassbookEntry([
+                    'passbook_id' => $newPassbookId,
+                    'date'        => $data['deposit_date'] ?? $submission->deposit_date?->toDateString() ?? now()->toDateString(),
+                    'particulars' => "Deposit via Messenger — {$staffName}" . ($branchName ? " ({$branchName})" : ''),
+                    'type'        => 'deposit',
+                    'amount'      => $amount,
+                    'source'      => 'messenger_bot',
+                    'created_by'  => auth()->id(),
+                    'updated_by'  => auth()->id(),
+                ]);
+                PassbookEntry::withoutEvents(fn() => $entry->save());
+                $data['passbook_entry_id'] = $entry->id;
+            }
+        } elseif ($submission->passbook_entry_id) {
+            // Same passbook — update the existing entry's amount and date
+            $entry = PassbookEntry::find($submission->passbook_entry_id);
+            if ($entry) {
+                PassbookEntry::withoutEvents(function () use ($entry, $data, $submission) {
+                    $entry->update([
+                        'amount'     => $data['amount'] ?? $submission->amount,
+                        'date'       => $data['deposit_date'] ?? $submission->deposit_date?->toDateString(),
+                        'updated_by' => auth()->id(),
+                    ]);
+                });
+            }
+        }
+
+        $submission->update(array_merge($data, [
+            'admin_status' => 'approved',
+            'reviewed_at'  => now(),
+            'reviewed_by'  => auth()->id(),
+        ]));
+
+        return back()->with('success', 'Submission updated and approved.');
+    }
+
+    // ── Admin: reject a submission ───────────────────────────────────────────
+    public function reject(DepositSlipSubmission $submission)
+    {
+        // Remove the passbook entry if one was created
+        if ($submission->passbook_entry_id) {
+            PassbookEntry::find($submission->passbook_entry_id)?->delete();
+        }
+
+        $submission->update([
+            'admin_status'     => 'rejected',
+            'passbook_entry_id' => null,
+            'reviewed_at'      => now(),
+            'reviewed_by'      => auth()->id(),
+        ]);
+
+        return back()->with('success', 'Submission rejected and passbook entry removed.');
+    }
+
     // ── Admin: list all submissions ─────────────────────────────────────────
     public function submissions(Request $request)
     {
@@ -251,8 +339,9 @@ class MessengerController extends Controller
         }
 
         $submissions = $query->paginate(30)->withQueryString();
+        $passbooks   = \App\Models\Passbook::with('branch')->orderBy('bank_name')->get();
 
-        return view('deposit-slips.index', compact('submissions'));
+        return view('deposit-slips.index', compact('submissions', 'passbooks'));
     }
 
     // ── Serve stored image (auth-protected) ─────────────────────────────────
