@@ -10,11 +10,17 @@ use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(\Illuminate\Http\Request $request)
     {
         $now   = Carbon::now();
-        $month = $now->month;
-        $year  = $now->year;
+        $month = (int) $request->query('month', $now->month);
+        $year  = (int) $request->query('year',  $now->year);
+
+        // Clamp to valid ranges
+        $month = max(1, min(12, $month));
+        $year  = max(2020, min((int) $now->year, $year));
+
+        $selectedDate = Carbon::createFromDate($year, $month, 1);
 
         $branches        = Branch::orderBy('name')->get();
         $revenueBranches = $branches->where('is_cost_center', false);
@@ -46,15 +52,26 @@ class DashboardController extends Controller
         $allTimeSales     = SalesEntry::whereHas('period', fn($q) => $q->whereIn('branch_id', $revenueBranchIds))->sum('amount');
         $allTimeExpenses  = ExpenseEntry::whereHas('period', fn($q) => $q->whereIn('branch_id', $revenueBranchIds))->sum('amount');
 
-        // Recent activity
+        // Recent activity (always current — not affected by selected period)
         $recentExpenses = ExpenseEntry::with(['period.branch', 'category', 'creator'])
             ->latest()->take(8)->get();
 
         $recentSales = SalesEntry::with(['period.branch', 'creator'])
             ->latest()->take(5)->get();
 
+        // Month options for the dropdown (last 18 months up to current)
+        $monthOptions = collect();
+        for ($i = 0; $i < 18; $i++) {
+            $d = $now->copy()->startOfMonth()->subMonths($i);
+            $monthOptions->push([
+                'month' => (int) $d->month,
+                'year'  => (int) $d->year,
+                'label' => $d->format('F Y'),
+            ]);
+        }
+
         return view('dashboard', compact(
-            'now', 'month', 'year',
+            'now', 'month', 'year', 'selectedDate', 'monthOptions',
             'branches', 'revenueBranches', 'costCenters',
             'currentPeriods', 'revenuePeriods', 'overheadPeriods',
             'totalSalesThisMonth', 'totalExpensesThisMonth',

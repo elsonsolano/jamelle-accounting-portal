@@ -16,8 +16,16 @@
         <p class="text-sm text-gray-500 mt-0.5">{{ $now->format('l, F j, Y') }}</p>
     </div>
     <div class="text-right">
-        <p class="text-xs text-gray-400 uppercase tracking-wide font-medium">Reporting Period</p>
-        <p class="text-sm font-semibold text-indigo-700">{{ $now->format('F Y') }}</p>
+        <p class="text-xs text-gray-400 uppercase tracking-wide font-medium mb-1">Reporting Period</p>
+        <select onchange="window.location.href='{{ route('dashboard') }}?month='+this.value.split('-')[0]+'&year='+this.value.split('-')[1]"
+                class="text-sm font-semibold text-indigo-700 border border-indigo-200 rounded px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300 cursor-pointer">
+            @foreach($monthOptions as $option)
+                <option value="{{ $option['month'] }}-{{ $option['year'] }}"
+                        {{ $option['month'] === $month && $option['year'] === $year ? 'selected' : '' }}>
+                    {{ $option['label'] }}
+                </option>
+            @endforeach
+        </select>
     </div>
 </div>
 
@@ -30,7 +38,7 @@
             <span class="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center text-emerald-600 text-sm font-bold">₱</span>
         </div>
         <p class="text-2xl font-bold text-emerald-700 tabular-nums">₱{{ number_format($totalSalesThisMonth, 0) }}</p>
-        <p class="text-xs text-gray-400 mt-1">{{ $now->format('F Y') }}</p>
+        <p class="text-xs text-gray-400 mt-1">{{ $selectedDate->format('F Y') }}</p>
     </div>
 
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
@@ -80,7 +88,7 @@
             <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
                 <div>
                     <h2 class="font-semibold text-gray-800">Branch Performance</h2>
-                    <p class="text-xs text-gray-400 mt-0.5">Revenue branches · {{ $now->format('F Y') }}</p>
+                    <p class="text-xs text-gray-400 mt-0.5">Revenue branches · {{ $selectedDate->format('F Y') }}</p>
                 </div>
                 <a href="{{ route('expense-periods.index') }}" class="text-xs text-indigo-600 hover:underline">View all periods →</a>
             </div>
@@ -162,7 +170,7 @@
             <div class="px-5 py-4 border-b border-amber-100 flex items-center justify-between bg-amber-50">
                 <div>
                     <h2 class="font-semibold text-amber-800">Overhead / Cost Centers</h2>
-                    <p class="text-xs text-amber-500 mt-0.5">Not included in operating income · {{ $now->format('F Y') }}</p>
+                    <p class="text-xs text-amber-500 mt-0.5">Not included in operating income · {{ $selectedDate->format('F Y') }}</p>
                 </div>
             </div>
             <div class="overflow-x-auto">
