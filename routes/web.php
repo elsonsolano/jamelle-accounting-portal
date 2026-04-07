@@ -16,6 +16,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard');
 
+// Public pages
+Route::get('/privacy', fn() => view('privacy'))->name('privacy');
+
 // Messenger Bot Webhook (no auth, no CSRF)
 Route::get('/messenger/webhook', [MessengerController::class, 'verify'])->name('messenger.verify');
 Route::post('/messenger/webhook', [MessengerController::class, 'webhook'])->name('messenger.webhook');
