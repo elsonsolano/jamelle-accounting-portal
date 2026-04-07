@@ -12,13 +12,18 @@ class DashboardController extends Controller
 {
     public function index(\Illuminate\Http\Request $request)
     {
-        $now   = Carbon::now();
-        $month = (int) $request->query('month', $now->month);
-        $year  = (int) $request->query('year',  $now->year);
+        $now = Carbon::now();
 
-        // Clamp to valid ranges
-        $month = max(1, min(12, $month));
-        $year  = max(2020, min((int) $now->year, $year));
+        if ($request->has('month') && $request->has('year')) {
+            $month = (int) $request->query('month');
+            $year  = (int) $request->query('year');
+            $month = max(1, min(12, $month));
+            $year  = max(2020, min((int) $now->year, $year));
+            session(['dashboard_month' => $month, 'dashboard_year' => $year]);
+        } else {
+            $month = (int) session('dashboard_month', $now->month);
+            $year  = (int) session('dashboard_year',  $now->year);
+        }
 
         $selectedDate = Carbon::createFromDate($year, $month, 1);
 
