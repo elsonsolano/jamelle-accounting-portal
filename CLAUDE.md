@@ -68,10 +68,9 @@ This is the most complex page. It is a single Alpine.js component (`x-data="peri
 3. All computed panels (running totals, sidebar breakdowns, operating income, net operating income) are Alpine.js getters derived from the in-memory `entries` array — no server round-trips needed.
 4. Mutations (add/edit/delete entry, save gross sales) call the JSON API endpoints and update the local array from the response.
 
-**Right sidebar (Expenses tab)** has three panels:
-- **Operational Expenses** — category-level breakdown for operational categories + subtotal
-- **Overhead Expenses** — category-level breakdown for overhead categories + subtotal
-- **Operating Income** — Gross Sales − Total Expenses, VAT/ITR, Net Operating Income (hidden for cost center branches)
+**Right sidebar (Expenses tab)** differs by branch type:
+- **Revenue branches** — three panels: Operational Expenses (subtotal), Overhead Expenses (subtotal), Operating Income (Gross Sales − Total Expenses, VAT/ITR, Net Operating Income)
+- **Cost center branches** — single amber-styled "Overhead Expenses — All categories" panel using the `allCategoryTotals` getter (which is an alias of `categoryTotals`). No operational/overhead split, no Operating Income panel.
 
 **Sales tab stats** — when sales entries exist, three stat cards appear above the table: Average Daily Sales, Biggest Day (with date), Lowest Day (with date). Computed via `avgDailySales`, `biggestSales`, `lowestSales` getters.
 
@@ -101,6 +100,8 @@ This is the most complex page. It is a single Alpine.js component (`x-data="peri
 
 **Important:** `/reports/branch-summary` must be declared before `/reports/{period}/summary` in `routes/web.php` to avoid the wildcard swallowing it.
 
+**Consolidated report cost center indicator:** Cost center branch column headers carry a `*` superscript and a footnote below the table explains that all their expenses are overhead in nature regardless of which section (Operational/Overhead) they appear in. The matrix structure is uniform across all branches — the footnote is the only differentiation.
+
 `ExpenseCalculatorService` (`app/Services/`) is used exclusively by `ReportController`. It is bound as a singleton in `AppServiceProvider`. The show-page calculations are done client-side in Alpine.js.
 
 ### Key Model Behaviors
@@ -112,6 +113,7 @@ This is the most complex page. It is a single Alpine.js component (`x-data="peri
 - All money columns are `decimal(15,2)`.
 - **`User`** has a nullable `branch_id` FK and a `branch()` BelongsTo relationship.
 - **`PassbookEntry`** follows the same `created_by`/`updated_by` boot pattern. Has a `source` enum (`manual` | `paymaya_auto`) — auto-synced entries show an "Auto Sync" badge in the ledger view.
+- **`AppSetting`** is a general-purpose key/value store (`app_settings` table, `key` as primary key). Use `AppSetting::get($key, $default)` and `AppSetting::set($key, $value)` for runtime-mutable config that must survive Railway deploys (e.g. OAuth tokens). Do not use it for static config — keep that in `.env`.
 
 ### Branch Summary Report (`/reports/branch-summary`)
 
@@ -155,15 +157,19 @@ Passbook (branch_id, bank_name, account_number, opening_balance, opening_date)
 Automatically fetches PayMaya settlement emails from Gmail and posts deposits to the matching passbooks.
 
 **Flow:**
-1. `GmailService` authenticates via OAuth2 refresh token (stored in `GOOGLE_REFRESH_TOKEN` env var), then searches Gmail for emails from `noreply.settlement@maya.ph` with subject containing `SETTLEMENT BREAKDOWN` sent today.
+1. `GmailService` authenticates via OAuth2 refresh token, then searches Gmail for emails from `noreply.settlement@maya.ph` with subject containing `SETTLEMENT BREAKDOWN` sent today.
 2. The `.XLS` attachment is a UTF-16LE encoded HTML file disguised as Excel. `PaymayaSettlementParser` detects the BOM, converts to UTF-8, parses the HTML table, and extracts the `Amount credited` value per bank account (appears only on the first row of each bank account group).
 3. Bank accounts are matched to passbooks by last 4 digits: `**1001` → `account_number LIKE '%1001'`.
 4. Each matched bank account gets a `deposit` `PassbookEntry` with `source = paymaya_auto`.
 5. Every processed email is recorded in `paymaya_imports` (keyed by `gmail_message_id`). Re-processing the same email creates a `duplicate` status record — admin must manually review/delete.
 
-**Key env vars:** `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`, `GOOGLE_REFRESH_TOKEN`, `PAYMAYA_SENDER`
+**Shared processing logic** lives in `PaymayaSyncService::processEmails()` and `processEmail()`. Both the `paymaya:sync` Artisan command and the `PaymayaController::searchAndSync()` web action delegate to this service — do not duplicate the logic.
 
-**Gmail OAuth setup:** Visit `/paymaya` → Connect Gmail (one-time). Stores refresh token in `.env`. On Railway, copy the `GOOGLE_REFRESH_TOKEN` value to the environment variables.
+**Manual subject search** (`POST /paymaya/search-sync`): The `/paymaya` page has a "Search & Process by Subject" form. It calls `GmailService::fetchSettlementEmailsBySubject(string $subject)` which searches by subject only (no date constraint), then runs the same `PaymayaSyncService` pipeline. Use this to recover missed emails when the cron fails.
+
+**Key env vars:** `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`, `PAYMAYA_SENDER`
+
+**Gmail OAuth setup:** Visit `/paymaya` → Connect Gmail (one-time). The refresh token is stored in the `app_settings` table (key: `google_refresh_token`) — not in `.env`. This survives Railway deploys without any manual copy-paste. To re-authorize after token expiry, click **Reconnect Gmail** on the same page.
 
 **Railway cron:** Add a Cron service with command `php artisan paymaya:sync` and schedule `0 8 * * 1-5` (Mon–Fri 8 AM).
 
@@ -208,9 +214,15 @@ Dynamic Tailwind classes for category badge colors are defined as plain strings 
 - **Default admin:** `admin@example.com` / `password`
 - **Default superadmin:** `superadmin@example.com` / `password`
 
+### Dashboard (`/`)
+
+The dashboard accepts `?month=M&year=Y` query parameters to view any historical period. The selected month/year is persisted in the PHP session (`dashboard_month`, `dashboard_year`) so navigating away and returning restores the last selection. The dropdown shows the last 18 months. **Recent Sales and Recent Expenses panels are not period-filtered** — they always show the latest activity across all time.
+
 ### Expense Category Groupings
 
-Categories are split into two groups used by the sidebar computed getters (`operationalCategoryTotals`, `overheadCategoryTotals`, `operationalTotal`, `overheadTotal`) in `show.blade.php`. The group membership is defined as hardcoded `Set` constants in those getters — if categories are added or renamed, update all four getters.
+Categories are split into two groups used by the sidebar computed getters (`operationalCategoryTotals`, `overheadCategoryTotals`, `operationalTotal`, `overheadTotal`) in `show.blade.php`. The group membership is defined as hardcoded `Set` constants in those getters — if categories are added or renamed, update all four getters. The same lists are duplicated in `ReportController::consolidatedExpense()` — keep them in sync.
+
+**Cost center branches bypass this split entirely** — the sidebar uses `allCategoryTotals` (all entries, no group filter) and shows one unified panel.
 
 **Operational (12):** Staff Payroll and Allowance, Store Supplies, BIR & City Gov't Fees, Stocks Cost, Store Rental & CUSA, Pest Control, Hydro Lab, Tel, Cable, Internet & Cel., Fuel, Office Equipments, Logistics, Commissary Rental & Electricity
 
