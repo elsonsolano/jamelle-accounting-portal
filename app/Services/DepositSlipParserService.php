@@ -30,6 +30,11 @@ class DepositSlipParserService
         // Determine parse status
         $parseStatus = $this->determineParseStatus($parsed);
 
+        // Clean account number — strip dashes and special characters
+        if (!empty($parsed['account_number'])) {
+            $parsed['account_number'] = preg_replace('/[^0-9]/', '', $parsed['account_number']);
+        }
+
         // Find matching passbook
         $passbook = null;
         if (!empty($parsed['account_number'])) {
@@ -194,9 +199,7 @@ PROMPT;
 
     private function findPassbook(string $accountNumber): ?Passbook
     {
-        // Extract digits only, take last 4
-        $digits  = preg_replace('/\D/', '', $accountNumber);
-        $lastFour = substr($digits, -4);
+        $lastFour = substr($accountNumber, -4);
 
         if (strlen($lastFour) < 4) {
             return null;
