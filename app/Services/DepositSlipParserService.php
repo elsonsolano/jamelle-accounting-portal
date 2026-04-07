@@ -84,11 +84,26 @@ class DepositSlipParserService
         }
     }
 
+    private function detectMimeType(string $contents): string
+    {
+        $bytes = substr($contents, 0, 4);
+        if (str_starts_with($bytes, "\x89PNG")) return 'image/png';
+        if (str_starts_with($bytes, "GIF8"))   return 'image/gif';
+        if (str_starts_with($bytes, "\xFF\xD8")) return 'image/jpeg';
+        return 'image/jpeg'; // default
+    }
+
     private function callClaudeVision(string $imageContents): array
     {
         try {
-            $apiKey = config('services.anthropic.api_key');
-            $base64 = base64_encode($imageContents);
+            $apiKey   = config('services.anthropic.api_key');
+            $base64   = base64_encode($imageContents);
+            $mimeType = $this->detectMimeType($imageContents);
+
+            if (!$apiKey) {
+                Log::error('ANTHROPIC_API_KEY is not configured');
+                return [];
+            }
 
             $prompt = <<<'PROMPT'
 You are analyzing a Philippine bank deposit slip. Extract the following fields:
@@ -123,7 +138,7 @@ PROMPT;
                                     'type'   => 'image',
                                     'source' => [
                                         'type'       => 'base64',
-                                        'media_type' => 'image/jpeg',
+                                        'media_type' => $mimeType,
                                         'data'       => $base64,
                                     ],
                                 ],
@@ -148,7 +163,10 @@ PROMPT;
                 }
             }
         } catch (\Throwable $e) {
-            Log::error('Claude Vision API call failed', ['error' => $e->getMessage()]);
+            Log::error('Claude Vision API call failed', [
+                'error'   => $e->getMessage(),
+                'api_key' => $apiKey ? 'set (length=' . strlen($apiKey) . ')' : 'MISSING',
+            ]);
         }
 
         return [];
