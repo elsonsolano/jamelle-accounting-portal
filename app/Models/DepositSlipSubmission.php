@@ -1,0 +1,76 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class DepositSlipSubmission extends Model
+{
+    protected $fillable = [
+        'fb_sender_id', 'messenger_staff_id', 'branch_id',
+        'bank_name', 'account_number', 'amount', 'deposit_date', 'reference_number', 'depositor_name',
+        'parse_status', 'confidence_notes', 'is_duplicate',
+        'passbook_id', 'passbook_entry_id', 'image_path',
+        'reviewed_at', 'reviewed_by',
+    ];
+
+    protected $casts = [
+        'amount'       => 'decimal:2',
+        'deposit_date' => 'date',
+        'is_duplicate' => 'boolean',
+        'reviewed_at'  => 'datetime',
+    ];
+
+    public function staff(): BelongsTo
+    {
+        return $this->belongsTo(MessengerStaff::class, 'messenger_staff_id');
+    }
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
+    }
+
+    public function passbook(): BelongsTo
+    {
+        return $this->belongsTo(Passbook::class);
+    }
+
+    public function passbookEntry(): BelongsTo
+    {
+        return $this->belongsTo(PassbookEntry::class);
+    }
+
+    public function reviewer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
+    public function isReviewed(): bool
+    {
+        return $this->reviewed_at !== null;
+    }
+
+    public function statusBadgeClass(): string
+    {
+        return match ($this->parse_status) {
+            'success'        => 'bg-green-100 text-green-800',
+            'low_confidence' => 'bg-yellow-100 text-yellow-800',
+            default          => 'bg-red-100 text-red-800',
+        };
+    }
+
+    public function statusLabel(): string
+    {
+        if ($this->is_duplicate) {
+            return 'Duplicate';
+        }
+
+        return match ($this->parse_status) {
+            'success'        => 'Parsed',
+            'low_confidence' => 'Low Confidence',
+            default          => 'Parse Failed',
+        };
+    }
+}

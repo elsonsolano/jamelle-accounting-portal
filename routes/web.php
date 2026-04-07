@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\MessengerController;
 use App\Http\Controllers\ExpensePeriodController;
 use App\Http\Controllers\ExpenseEntryController;
 use App\Http\Controllers\GrossSalesController;
@@ -14,6 +15,10 @@ use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard');
+
+// Messenger Bot Webhook (no auth, no CSRF)
+Route::get('/messenger/webhook', [MessengerController::class, 'verify'])->name('messenger.verify');
+Route::post('/messenger/webhook', [MessengerController::class, 'webhook'])->name('messenger.webhook');
 
 // Google OAuth callback (must be outside auth middleware)
 Route::get('/paymaya/auth/callback', [PaymayaController::class, 'handleGoogleCallback'])->name('paymaya.auth.callback');
@@ -85,6 +90,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
         Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
     });
+
+    // Deposit Slip Submissions (Messenger Bot)
+    Route::get('/deposit-slips', [MessengerController::class, 'submissions'])->name('deposit-slips.index');
+    Route::get('/deposit-slips/{submission}/image', [MessengerController::class, 'serveImage'])->name('deposit-slips.image');
+    Route::post('/deposit-slips/{submission}/review', [MessengerController::class, 'markReviewed'])->name('deposit-slips.review');
 
     // Reports
     Route::get('/reports/consolidated', [ReportController::class, 'consolidatedExpense'])

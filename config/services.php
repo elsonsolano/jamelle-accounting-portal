@@ -35,6 +35,20 @@ return [
         ],
     ],
 
+    'messenger' => [
+        'page_access_token' => env('MESSENGER_PAGE_ACCESS_TOKEN'),
+        'verify_token'      => env('MESSENGER_VERIFY_TOKEN'),
+        'app_secret'        => env('MESSENGER_APP_SECRET'),
+    ],
+
+    'anthropic' => [
+        'api_key' => env('ANTHROPIC_API_KEY'),
+    ],
+
+    'employee_api' => [
+        'url' => env('EMPLOYEE_API_URL'),
+    ],
+
     'google' => [
         'client_id'       => env('GOOGLE_CLIENT_ID'),
         'client_secret'   => env('GOOGLE_CLIENT_SECRET'),

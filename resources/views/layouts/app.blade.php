@@ -26,6 +26,7 @@
                     <a href="{{ route('expense-periods.index') }}" class="hover:text-indigo-600">Periods</a>
                     <a href="{{ route('passbooks.index') }}" class="hover:text-indigo-600">Passbooks</a>
                     <a href="{{ route('paymaya.index') }}" class="hover:text-indigo-600">PayMaya</a>
+                    <a href="{{ route('deposit-slips.index') }}" class="hover:text-indigo-600">Deposit Slips</a>
                     <a href="{{ route('reports.consolidated') }}" class="hover:text-indigo-600">Consolidated</a>
                     <a href="{{ route('reports.branch-summary') }}" class="hover:text-indigo-600">Branch Summary</a>
                     @can('manage users')
@@ -58,6 +59,7 @@
                 <a href="{{ route('expense-periods.index') }}" class="block px-3 py-2 text-sm font-medium text-gray-700 rounded hover:bg-indigo-50 hover:text-indigo-600">Periods</a>
                 <a href="{{ route('passbooks.index') }}" class="block px-3 py-2 text-sm font-medium text-gray-700 rounded hover:bg-indigo-50 hover:text-indigo-600">Passbooks</a>
                 <a href="{{ route('paymaya.index') }}" class="block px-3 py-2 text-sm font-medium text-gray-700 rounded hover:bg-indigo-50 hover:text-indigo-600">PayMaya</a>
+                <a href="{{ route('deposit-slips.index') }}" class="block px-3 py-2 text-sm font-medium text-gray-700 rounded hover:bg-indigo-50 hover:text-indigo-600">Deposit Slips</a>
                 <a href="{{ route('reports.consolidated') }}" class="block px-3 py-2 text-sm font-medium text-gray-700 rounded hover:bg-indigo-50 hover:text-indigo-600">Consolidated</a>
                 <a href="{{ route('reports.branch-summary') }}" class="block px-3 py-2 text-sm font-medium text-gray-700 rounded hover:bg-indigo-50 hover:text-indigo-600">Branch Summary</a>
                 @can('manage users')
