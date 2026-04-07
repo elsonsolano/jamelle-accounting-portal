@@ -49,7 +49,6 @@ class PaymayaSettlementParser
         }
 
         $results = [];
-        $seenAccounts = [];
 
         foreach ($table->getElementsByTagName('tr') as $idx => $row) {
             if ($idx === 0) continue; // skip header
@@ -68,10 +67,9 @@ class PaymayaSettlementParser
             $bankAccount  = $cells[6];  // e.g. **1001
             $amountCredited = isset($cells[13]) ? $cells[13] : null;
 
-            // Amount credited only appears on the first row of each bank account group
-            if ($amountCredited && !isset($seenAccounts[$bankAccount])) {
-                $seenAccounts[$bankAccount] = true;
-
+            // Amount credited only appears on the first row of each bank account group (rowspan).
+            // A bank account may have multiple groups in one email — capture all of them.
+            if ($amountCredited && trim($amountCredited) !== '') {
                 $results[] = [
                     'bank_account' => $bankAccount,
                     'amount'       => (float) str_replace(',', '', $amountCredited),
