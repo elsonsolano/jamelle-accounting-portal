@@ -131,9 +131,8 @@ class MessengerController extends Controller
         $staff->registered_at  = now();
         $staff->save();
 
-        $branchName = $staff->branch?->name ?? 'your branch';
         $this->messenger->sendText($staff->fb_sender_id,
-            "You're registered! Branch: {$branchName}.\n\nYou can now send deposit slip photos anytime."
+            "You're registered! You can now send deposit slip photos anytime."
         );
     }
 
