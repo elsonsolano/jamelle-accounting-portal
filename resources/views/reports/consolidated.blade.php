@@ -48,7 +48,9 @@
             <tr>
                 <th class="px-3 py-2 text-left sticky left-0 bg-gray-50 z-10">Category</th>
                 @foreach($branches as $branch)
-                    <th class="px-3 py-2 text-right whitespace-nowrap">{{ $branch->name }}</th>
+                    <th class="px-3 py-2 text-right whitespace-nowrap">
+                        {{ $branch->name }}@if($branch->is_cost_center)<sup class="text-amber-400 font-bold">*</sup>@endif
+                    </th>
                 @endforeach
                 <th class="px-3 py-2 text-right font-bold bg-indigo-50">Total</th>
             </tr>
@@ -141,6 +143,14 @@
         </tfoot>
     </table>
 </div>
+
+@if($branches->where('is_cost_center', true)->isNotEmpty())
+<p class="mt-3 text-xs text-gray-400">
+    <sup class="text-amber-500 font-bold">*</sup>
+    Cost center branch — all its expenses are overhead in nature regardless of which section they appear in.
+</p>
+@endif
+
 @endsection
 
 @push('scripts')

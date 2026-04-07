@@ -259,7 +259,36 @@
     {{-- Right sidebar --}}
     <div class="w-full lg:w-80 lg:shrink-0 space-y-4">
 
-        {{-- Operational Expenses --}}
+        @if($isCostCenter)
+        {{-- Cost center: all categories are overhead — show single unified panel --}}
+        <div class="bg-white rounded-lg shadow-sm border border-amber-200 overflow-hidden">
+            <div class="px-4 py-3 border-b border-amber-100 bg-amber-50 flex items-center justify-between">
+                <div>
+                    <h2 class="font-semibold text-amber-800 text-sm uppercase tracking-wide">Overhead Expenses</h2>
+                    <p class="text-xs text-amber-500 mt-0.5">All categories — cost center</p>
+                </div>
+                <span class="text-xs font-mono text-amber-800 font-medium" x-text="'₱' + fmt(grandTotal)"></span>
+            </div>
+            <ul class="divide-y divide-amber-50 text-sm max-h-96 overflow-y-auto">
+                <template x-if="Object.keys(allCategoryTotals).length === 0">
+                    <li class="px-4 py-6 text-center text-gray-400 text-xs">No entries yet.</li>
+                </template>
+                <template x-for="[name, total] in Object.entries(allCategoryTotals)" :key="name">
+                    <li class="flex justify-between items-center px-4 py-2 hover:bg-amber-50">
+                        <span class="px-2 py-0.5 rounded text-xs font-medium" :class="categoryColor(name)" x-text="name"></span>
+                        <span class="text-amber-900 tabular-nums text-xs font-medium ml-4 shrink-0" x-text="fmt(total)"></span>
+                    </li>
+                </template>
+            </ul>
+            <template x-if="Object.keys(allCategoryTotals).length > 0">
+                <div class="px-4 py-2 bg-amber-50 border-t border-amber-100 flex justify-between text-sm font-semibold">
+                    <span class="text-amber-700">Total</span>
+                    <span class="text-amber-900 tabular-nums" x-text="'₱' + fmt(grandTotal)"></span>
+                </div>
+            </template>
+        </div>
+        @else
+        {{-- Revenue branch: split into operational and overhead panels --}}
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                 <h2 class="font-semibold text-gray-700 text-sm uppercase tracking-wide">Operational Expenses</h2>
@@ -284,7 +313,6 @@
             </template>
         </div>
 
-        {{-- Overhead Expenses --}}
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                 <h2 class="font-semibold text-gray-700 text-sm uppercase tracking-wide">Overhead Expenses</h2>
@@ -308,6 +336,7 @@
                 </div>
             </template>
         </div>
+        @endif
 
         {{-- Operating Income / Cost Center Summary --}}
         @if($isCostCenter)
@@ -695,6 +724,11 @@ function periodApp() {
                 totals[e.category_name] = (totals[e.category_name] || 0) + (parseFloat(e.amount) || 0);
             }
             return Object.fromEntries(Object.entries(totals).sort(([a],[b]) => a.localeCompare(b)));
+        },
+
+        // All categories lumped together — used by cost center sidebar panel
+        get allCategoryTotals() {
+            return this.categoryTotals;
         },
 
         get operationalCategoryTotals() {
