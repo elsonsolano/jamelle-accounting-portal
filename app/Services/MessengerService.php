@@ -52,8 +52,12 @@ class MessengerService
     public function downloadImage(string $url): ?string
     {
         try {
+            // Messenger attachment URLs are direct CDN links — no auth needed
             $response = $this->client->get($url, [
-                'query' => ['access_token' => $this->pageAccessToken],
+                'timeout' => 30,
+                'headers' => [
+                    'User-Agent' => 'Mozilla/5.0',
+                ],
             ]);
             return $response->getBody()->getContents();
         } catch (\Throwable $e) {
