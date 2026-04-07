@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\AppSetting;
+use App\Models\PassbookEntry;
 use App\Models\PaymayaImport;
 use App\Services\GmailService;
+use App\Services\PaymayaSettlementParser;
+use App\Services\PaymayaSyncService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 
@@ -55,12 +58,48 @@ class PaymayaController extends Controller
             ->with('success', 'Sync completed. ' . trim($output));
     }
 
+    public function searchAndSync(Request $request, GmailService $gmail, PaymayaSettlementParser $parser, PaymayaSyncService $sync)
+    {
+        $request->validate([
+            'subject' => ['required', 'string', 'min:5', 'max:255'],
+        ]);
+
+        $subjectQuery = trim($request->input('subject'));
+
+        try {
+            $emails = $gmail->fetchSettlementEmailsBySubject($subjectQuery);
+        } catch (\Exception $e) {
+            return redirect()->route('paymaya.index')
+                ->with('error', 'Gmail error: ' . $e->getMessage());
+        }
+
+        if (empty($emails)) {
+            return redirect()->route('paymaya.index')
+                ->with('error', "No emails found matching: \"{$subjectQuery}\"");
+        }
+
+        $results  = $sync->processEmails($emails, $parser);
+        $summary  = collect($results)->groupBy('status');
+        $processed = $summary->get('processed', collect())->count();
+        $duplicate = $summary->get('duplicate', collect())->count();
+        $failed    = $summary->get('failed', collect())->count();
+
+        $parts = [];
+        if ($processed) $parts[] = "{$processed} processed";
+        if ($duplicate) $parts[] = "{$duplicate} duplicate(s)";
+        if ($failed)    $parts[] = "{$failed} failed";
+
+        $message = 'Search complete — ' . implode(', ', $parts) . '.';
+
+        return redirect()->route('paymaya.index')
+            ->with('success', $message);
+    }
+
     public function destroyImport(PaymayaImport $import)
     {
-        // Also delete the linked passbook entries
         foreach ($import->lines as $line) {
             if ($line->passbook_entry_id) {
-                \App\Models\PassbookEntry::where('id', $line->passbook_entry_id)->delete();
+                PassbookEntry::where('id', $line->passbook_entry_id)->delete();
             }
         }
 

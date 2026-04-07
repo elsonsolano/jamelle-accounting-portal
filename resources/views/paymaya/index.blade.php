@@ -22,14 +22,48 @@
     </div>
 </div>
 
+{{-- Error flash (success is handled by the global layout toast) --}}
+@if(session('error'))
+    <div class="mb-4 p-3 rounded bg-red-50 border border-red-200 text-red-700 text-sm">
+        {{ session('error') }}
+    </div>
+@endif
+
 {{-- Gmail connection status --}}
-<div class="mb-6 p-4 rounded border {{ $hasRefreshToken ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200' }}">
+<div class="mb-4 p-4 rounded border {{ $hasRefreshToken ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200' }}">
     <div class="flex items-center gap-2 text-sm">
         <span class="{{ $hasRefreshToken ? 'text-green-700' : 'text-yellow-700' }} font-medium">
             {{ $hasRefreshToken ? '● Gmail Connected — System Crawl runs every Mon-Fri, 11PM automatically.' : '● Gmail Not Connected — click "Connect Gmail" to authorize' }}
         </span>
     </div>
 </div>
+
+{{-- Manual subject search --}}
+@if($hasRefreshToken)
+<div class="mb-6 bg-white rounded-xl border border-gray-200 p-5">
+    <h2 class="text-sm font-semibold text-gray-700 mb-1">Search & Process by Subject</h2>
+    <p class="text-xs text-gray-400 mb-3">
+        Use this to manually process a missed or past email. Enter part or all of the subject line — e.g.
+        <span class="font-mono bg-gray-100 px-1 rounded">SETTLEMENT BREAKDOWN - CREDIT DATE Apr/06/2026</span>
+    </p>
+    <form method="POST" action="{{ route('paymaya.search-sync') }}" class="flex gap-2">
+        @csrf
+        <input type="text"
+               name="subject"
+               value="{{ old('subject') }}"
+               placeholder="e.g. SETTLEMENT BREAKDOWN - CREDIT DATE Apr/06/2026"
+               required
+               class="flex-1 text-sm border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+        <button type="submit"
+                class="text-sm bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 whitespace-nowrap">
+            Search &amp; Process
+        </button>
+    </form>
+    @error('subject')
+        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+    @enderror
+</div>
+@endif
 
 {{-- Import history --}}
 <div class="bg-white rounded shadow border border-gray-100 overflow-hidden">

@@ -99,6 +99,26 @@ class GmailService
         $tomorrow = now()->addDay()->format('Y/m/d');
         $query    = "from:{$sender} subject:\"SETTLEMENT BREAKDOWN\" after:{$today} before:{$tomorrow}";
 
+        return $this->fetchEmailsByQuery($query);
+    }
+
+    /**
+     * Search PayMaya settlement emails by a custom subject string (no date restriction).
+     * Returns array of ['message_id', 'subject', 'attachment_content']
+     */
+    public function fetchSettlementEmailsBySubject(string $subjectQuery): array
+    {
+        $sender = config('services.google.paymaya_sender', 'noreply.settlement@maya.ph');
+        $query  = "from:{$sender} subject:\"{$subjectQuery}\"";
+
+        return $this->fetchEmailsByQuery($query);
+    }
+
+    /**
+     * Shared fetch logic — executes a Gmail search query and returns parsed emails.
+     */
+    private function fetchEmailsByQuery(string $query): array
+    {
         $listResponse = $this->apiGetPublic('https://gmail.googleapis.com/gmail/v1/users/me/messages', [
             'q'          => $query,
             'maxResults' => 20,

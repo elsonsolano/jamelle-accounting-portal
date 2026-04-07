@@ -62,6 +62,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/paymaya', [PaymayaController::class, 'index'])->name('paymaya.index');
     Route::get('/paymaya/auth', [PaymayaController::class, 'redirectToGoogle'])->name('paymaya.auth');
     Route::post('/paymaya/sync-now', [PaymayaController::class, 'syncNow'])->name('paymaya.sync-now');
+    Route::post('/paymaya/search-sync', [PaymayaController::class, 'searchAndSync'])->name('paymaya.search-sync');
     Route::delete('/paymaya/imports/{import}', [PaymayaController::class, 'destroyImport'])->name('paymaya.destroy');
 
     // Passbooks
