@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\MessengerStaff;
 use App\Services\MessengerService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class SendMessengerReminder extends Command
 {
@@ -17,6 +18,7 @@ class SendMessengerReminder extends Command
 
         if ($staff->isEmpty()) {
             $this->info('No staff found.');
+            Log::info('messenger:send-reminder — no staff found, skipping.');
             return;
         }
 
@@ -25,8 +27,10 @@ class SendMessengerReminder extends Command
         foreach ($staff as $member) {
             $messenger->sendText($member->fb_sender_id, $message);
             $this->line("Sent to {$member->fb_name} ({$member->fb_sender_id})");
+            Log::info("messenger:send-reminder — sent to {$member->fb_name} ({$member->fb_sender_id})");
         }
 
         $this->info("Reminder sent to {$staff->count()} staff.");
+        Log::info("messenger:send-reminder — done, {$staff->count()} staff notified.");
     }
 }
