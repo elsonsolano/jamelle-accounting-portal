@@ -139,7 +139,7 @@
                                         <td class="py-1 font-mono">{{ $line->bank_account }}</td>
                                         <td class="py-1">
                                             @if($line->passbook)
-                                                {{ $line->passbook->branch->name }} — {{ $line->passbook->bank_name }}
+                                                <a href="{{ route('passbooks.show', $line->passbook) }}" class="text-indigo-600 hover:underline">{{ $line->passbook->branch->name }} — {{ $line->passbook->bank_name }}</a>
                                             @else
                                                 <span class="text-red-500">Unmatched</span>
                                             @endif
