@@ -115,7 +115,7 @@ This is the most complex page. It is a single Alpine.js component (`x-data="peri
 - **`GrossSales`** stores `vat_itr` (decimal 15,2, default 0) per branch per period — this is the VAT/ITR estimate used by the Branch Summary report. The `amount` field on `GrossSales` is a legacy single-value field and is no longer the source of truth for sales totals.
 - All money columns are `decimal(15,2)`.
 - **`User`** has a nullable `branch_id` FK and a `branch()` BelongsTo relationship.
-- **`PassbookEntry`** follows the same `created_by`/`updated_by` boot pattern. Has a `source` enum (`manual` | `paymaya_auto`) — auto-synced entries show an "Auto Sync" badge in the ledger view.
+- **`PassbookEntry`** follows the same `created_by`/`updated_by` boot pattern. Has a `source` enum (`manual` | `paymaya_auto` | `messenger_bot`) — auto-synced entries show an "Auto Sync" badge in the ledger view.
 - **`AppSetting`** is a general-purpose key/value store (`app_settings` table, `key` as primary key). Use `AppSetting::get($key, $default)` and `AppSetting::set($key, $value)` for runtime-mutable config that must survive Railway deploys (e.g. OAuth tokens). Do not use it for static config — keep that in `.env`.
 
 ### Branch Summary Report (`/reports/branch-summary`)
@@ -170,6 +170,8 @@ Automatically fetches PayMaya settlement emails from Gmail and posts deposits to
 
 **Manual subject search** (`POST /paymaya/search-sync`): The `/paymaya` page has a "Search & Process by Subject" form. It calls `GmailService::fetchSettlementEmailsBySubject(string $subject)` which searches by subject only (no date constraint), then runs the same `PaymayaSyncService` pipeline. Use this to recover missed emails when the cron fails.
 
+**Date-range email filter:** Both fetch methods skip emails whose subject contains a date range pattern like `03/01 to 03/31` (monthly summary reports). Only single-date subjects like `Apr/07/2026` are processed. The filter lives in `GmailService::fetchEmailsByQuery()`.
+
 **Key env vars:** `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`, `PAYMAYA_SENDER`
 
 **Gmail OAuth setup:** Visit `/paymaya` → Connect Gmail (one-time). The refresh token is stored in the `app_settings` table (key: `google_refresh_token`) — not in `.env`. This survives Railway deploys without any manual copy-paste. To re-authorize after token expiry, click **Reconnect Gmail** on the same page.
@@ -203,7 +205,9 @@ Staff submit bank deposit slip photos via Facebook Messenger → Claude Vision e
 
 **Daily reminder:** `messenger:send-reminder` command sends a 10 AM PHT reminder to all `MessengerStaff` records. Manually trigger via `/messenger/utils` or `php artisan messenger:send-reminder`.
 
-**Env vars:** `MESSENGER_PAGE_ACCESS_TOKEN`, `MESSENGER_VERIFY_TOKEN`, `MESSENGER_APP_SECRET`, `EMPLOYEE_API_URL`
+**Deposit slip images** are stored on Cloudflare R2 (not local disk). `DepositSlipParserService::storeImage()` writes to `Storage::disk('r2')`. `MessengerController::serveImage()` generates a 5-minute signed temporary URL and redirects — it does not proxy the image. The `r2` disk in `config/filesystems.php` uses the S3 driver with `use_path_style_endpoint: true` and auto-detects `C:/wamp64/cacert.pem` for SSL on WAMP. The `image_path` column on `deposit_slip_submissions` stores the R2 object key (e.g. `deposit-slips/2026/04/08/slip_xxx.jpg`).
+
+**Env vars:** `MESSENGER_PAGE_ACCESS_TOKEN`, `MESSENGER_VERIFY_TOKEN`, `MESSENGER_APP_SECRET`, `EMPLOYEE_API_URL`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`, `R2_PUBLIC_URL`
 
 ### Mobile Responsiveness
 
