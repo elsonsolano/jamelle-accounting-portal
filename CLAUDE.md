@@ -34,6 +34,9 @@ php artisan paymaya:sync
 
 # Debug PayMaya email MIME structure and parser output
 php artisan paymaya:debug
+
+# Manually send Messenger deposit slip reminder to all registered staff
+php artisan messenger:send-reminder
 ```
 
 ## Architecture Overview
@@ -171,9 +174,36 @@ Automatically fetches PayMaya settlement emails from Gmail and posts deposits to
 
 **Gmail OAuth setup:** Visit `/paymaya` → Connect Gmail (one-time). The refresh token is stored in the `app_settings` table (key: `google_refresh_token`) — not in `.env`. This survives Railway deploys without any manual copy-paste. To re-authorize after token expiry, click **Reconnect Gmail** on the same page.
 
-**Railway cron:** Add a Cron service with command `php artisan paymaya:sync` and schedule `0 8 * * 1-5` (Mon–Fri 8 AM).
+**Railway cron:** The worker service (`accounting-worker`) runs `php artisan schedule:run` on a `*/5 * * * *` schedule. All scheduled commands are defined in `routes/console.php` — do not add new Railway cron services, add to the Laravel scheduler instead. Current schedule: `paymaya:sync` Mon–Fri 15:00 UTC (11 PM PHT), `messenger:send-reminder` daily 02:00 UTC (10 AM PHT). Schedule times must be on 5-minute boundaries (`:00`, `:05`, etc.) to be caught reliably.
 
 **SSL on Windows:** `GmailService` auto-detects `C:/wamp64/cacert.pem` for local WAMP; falls back to system CA bundle on Linux/Railway.
+
+### Messenger Bot (`/deposit-slips`, `/messenger/utils`)
+
+Staff submit bank deposit slip photos via Facebook Messenger → Claude Vision extracts data → `PassbookEntry` auto-created → admin reviews at `/deposit-slips`.
+
+**Flow:**
+1. Staff message the Facebook Page "Jamelle Corp BOT". First-time senders are prompted for their Employee Code.
+2. Employee Code is validated via `GET {EMPLOYEE_API_URL}?code={code}` (returns `{ exists: true/false }`).
+3. On success, staff are saved as `MessengerStaff` (state: `active`) and sent the registration confirmation message.
+4. Subsequent image messages are processed by `DepositSlipParserService` using Claude Haiku vision — extracts bank name, account number, amount, date, reference number.
+5. A `DepositSlipSubmission` is created and a matching `PassbookEntry` (source: `messenger_bot`) is auto-posted if a passbook is found.
+
+**Key models:**
+- `MessengerStaff` — `fb_sender_id` → `employee_code` → `branch_id`, `state` (`pending_code` | `active`)
+- `DepositSlipSubmission` — `parse_status` (`success` | `low_confidence` | `failed`), `admin_status` (`pending` | `approved` | `rejected`), `is_duplicate`
+
+**Key files:**
+- `app/Http/Controllers/MessengerController.php` — webhook handler + admin CRUD + utilities
+- `app/Services/MessengerService.php` — Graph API calls (sendText, downloadImage, getSenderName)
+- `app/Services/DepositSlipParserService.php` — Claude Vision parsing + passbook matching
+- `resources/views/messenger/utils.blade.php` — manual reminder trigger + registered staff list
+
+**Bot status (as of 2026-04-08):** Dev mode only — Facebook Business Portfolio approval pending. Only app admins/testers can use it. Testers accept invites at `https://developers.facebook.com/settings/developer/requests/`.
+
+**Daily reminder:** `messenger:send-reminder` command sends a 10 AM PHT reminder to all `MessengerStaff` records. Manually trigger via `/messenger/utils` or `php artisan messenger:send-reminder`.
+
+**Env vars:** `MESSENGER_PAGE_ACCESS_TOKEN`, `MESSENGER_VERIFY_TOKEN`, `MESSENGER_APP_SECRET`, `EMPLOYEE_API_URL`
 
 ### Mobile Responsiveness
 
