@@ -11,6 +11,7 @@ use App\Services\MessengerService;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -320,6 +321,25 @@ class MessengerController extends Controller
         ]);
 
         return back()->with('success', 'Submission rejected and passbook entry removed.');
+    }
+
+    // ── Utilities ───────────────────────────────────────────────────────────
+    public function utils()
+    {
+        $staff = MessengerStaff::with('branch')->get();
+        return view('messenger.utils', compact('staff'));
+    }
+
+    public function sendReminderNow()
+    {
+        $exitCode = Artisan::call('messenger:send-reminder');
+        $output   = Artisan::output();
+
+        if ($exitCode === 0) {
+            return back()->with('success', 'Reminder sent! Output: ' . trim($output));
+        }
+
+        return back()->with('error', 'Command failed. Output: ' . trim($output));
     }
 
     // ── Admin: list all submissions ─────────────────────────────────────────
