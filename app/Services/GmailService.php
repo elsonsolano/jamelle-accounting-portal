@@ -134,6 +134,13 @@ class GmailService
             ]);
 
             $subject    = $this->getHeader($full['payload']['headers'] ?? [], 'Subject');
+
+            // Skip date-range settlement summaries (e.g. "CREDIT DATE 03/01 to 03/31")
+            // Only process single-date emails (e.g. "CREDIT DATE Apr/07/2026")
+            if (preg_match('/\d{1,2}\/\d{1,2}\s+to\s+\d{1,2}\/\d{1,2}/i', $subject)) {
+                continue;
+            }
+
             $attachment = $this->getAttachment($messageId, $full);
 
             if (!$attachment) continue;
