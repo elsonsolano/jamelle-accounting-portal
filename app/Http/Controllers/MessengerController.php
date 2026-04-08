@@ -133,9 +133,13 @@ class MessengerController extends Controller
         $staff->registered_at  = now();
         $staff->save();
 
+        $staff->load('branch');
+        $branchName = $staff->branch?->name ?? 'your branch';
+
         $this->messenger->sendText($staff->fb_sender_id,
-            "You're registered! You can now send deposit slip photos anytime."
+            "You are now allowed to send the deposit slip! After you send the deposit slip at the \"Jamelle x LLAOLLAO {$branchName}\" Group Chat, please send the deposit slip to me also so that I can record it into our system. Thank you!"
         );
+
     }
 
     private function handleActiveStaff(MessengerStaff $staff, array $message): void
