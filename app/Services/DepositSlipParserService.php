@@ -81,7 +81,7 @@ class DepositSlipParserService
             $dir  = 'deposit-slips/' . now()->format('Y/m/d');
             $name = uniqid('slip_', true) . '.jpg';
             $path = $dir . '/' . $name;
-            Storage::put($path, $contents);
+            Storage::disk('r2')->put($path, $contents);
             return $path;
         } catch (\Throwable $e) {
             Log::error('Failed to store deposit slip image', ['error' => $e->getMessage()]);

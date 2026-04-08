@@ -371,14 +371,19 @@ class MessengerController extends Controller
     // ── Serve stored image (auth-protected) ─────────────────────────────────
     public function serveImage(DepositSlipSubmission $submission)
     {
-        if (!$submission->image_path || !Storage::exists($submission->image_path)) {
+        if (!$submission->image_path) {
             abort(404);
         }
 
-        return response(Storage::get($submission->image_path), 200, [
-            'Content-Type'        => 'image/jpeg',
-            'Content-Disposition' => 'inline',
-        ]);
+        $disk = Storage::disk('r2');
+
+        if (!$disk->exists($submission->image_path)) {
+            abort(404);
+        }
+
+        $url = $disk->temporaryUrl($submission->image_path, now()->addMinutes(5));
+
+        return redirect($url);
     }
 
     // ── Mark as reviewed ────────────────────────────────────────────────────
