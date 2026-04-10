@@ -298,6 +298,26 @@ class MessengerController extends Controller
                     ]);
                 });
             }
+        } elseif ($submission->passbook_id) {
+            // Same passbook but no entry yet (e.g. was flagged as duplicate during auto-processing)
+            // Create the passbook entry now that admin is approving it
+            $amount = $data['amount'] ?? $submission->amount;
+            if ($amount) {
+                $staffName  = $submission->staff?->fb_name ?? 'Messenger Bot';
+                $branchName = $submission->branch?->name ?? '';
+                $entry      = new PassbookEntry([
+                    'passbook_id' => $submission->passbook_id,
+                    'date'        => $data['deposit_date'] ?? $submission->deposit_date?->toDateString() ?? now()->toDateString(),
+                    'particulars' => "Deposit via Messenger — {$staffName}" . ($branchName ? " ({$branchName})" : ''),
+                    'type'        => 'deposit',
+                    'amount'      => $amount,
+                    'source'      => 'messenger_bot',
+                    'created_by'  => auth()->id(),
+                    'updated_by'  => auth()->id(),
+                ]);
+                PassbookEntry::withoutEvents(fn() => $entry->save());
+                $data['passbook_entry_id'] = $entry->id;
+            }
         }
 
         $submission->update(array_merge($data, [
