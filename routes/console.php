@@ -8,5 +8,5 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::command('paymaya:sync')->cron('0 15 * * 1-5');       // Mon–Fri 15:00 UTC = 11 PM PHT
-Schedule::command('messenger:send-reminder')->cron('0 2 * * *'); // Daily 02:00 UTC = 10 AM PHT
+Schedule::command('paymaya:sync')->cron('0 23 * * 1-5');        // Mon–Fri 23:00 PHT = 15:00 UTC
+Schedule::command('messenger:send-reminder')->cron('0 10 * * *'); // Daily 10:00 PHT = 02:00 UTC

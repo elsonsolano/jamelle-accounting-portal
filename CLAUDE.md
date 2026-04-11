@@ -176,7 +176,7 @@ Automatically fetches PayMaya settlement emails from Gmail and posts deposits to
 
 **Gmail OAuth setup:** Visit `/paymaya` → Connect Gmail (one-time). The refresh token is stored in the `app_settings` table (key: `google_refresh_token`) — not in `.env`. This survives Railway deploys without any manual copy-paste. To re-authorize after token expiry, click **Reconnect Gmail** on the same page.
 
-**Railway cron:** The worker service (`accounting-worker`) runs `php artisan schedule:run` on a `*/5 * * * *` schedule. All scheduled commands are defined in `routes/console.php` — do not add new Railway cron services, add to the Laravel scheduler instead. Current schedule: `paymaya:sync` Mon–Fri 15:00 UTC (11 PM PHT), `messenger:send-reminder` daily 02:00 UTC (10 AM PHT). Schedule times must be on 5-minute boundaries (`:00`, `:05`, etc.) to be caught reliably.
+**Railway cron:** The worker service (`accounting-worker`) runs `php artisan schedule:run` on a `*/5 * * * *` schedule. All scheduled commands are defined in `routes/console.php` — do not add new Railway cron services, add to the Laravel scheduler instead. Current schedule: `paymaya:sync` Mon–Fri 23:00 PHT (15:00 UTC), `messenger:send-reminder` daily 10:00 PHT (02:00 UTC). **Important:** Cron expressions in `routes/console.php` must be written in **PHT (Asia/Manila)** because `APP_TIMEZONE=Asia/Manila` — Laravel interprets cron expressions in the app timezone, not UTC. Schedule times must be on 5-minute boundaries (`:00`, `:05`, etc.) to be caught reliably by the `*/5 * * * *` Railway cron.
 
 **SSL on Windows:** `GmailService` auto-detects `C:/wamp64/cacert.pem` for local WAMP; falls back to system CA bundle on Linux/Railway.
 
