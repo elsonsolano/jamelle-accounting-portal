@@ -23,6 +23,7 @@
                 {{-- Desktop nav --}}
                 <div class="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
                     <a href="{{ route('dashboard') }}" class="hover:text-indigo-600">Dashboard</a>
+                    <a href="{{ route('analytics') }}" class="hover:text-indigo-600">Analytics</a>
                     <a href="{{ route('expense-periods.index') }}" class="hover:text-indigo-600">Periods</a>
                     <a href="{{ route('passbooks.index') }}" class="hover:text-indigo-600">Passbooks</a>
                     <a href="{{ route('paymaya.index') }}" class="hover:text-indigo-600">PayMaya</a>
@@ -56,6 +57,7 @@
             <div x-show="navOpen" x-cloak @click.outside="navOpen = false"
                  class="md:hidden border-t border-gray-100 py-2 space-y-0.5">
                 <a href="{{ route('dashboard') }}" class="block px-3 py-2 text-sm font-medium text-gray-700 rounded hover:bg-indigo-50 hover:text-indigo-600">Dashboard</a>
+                <a href="{{ route('analytics') }}" class="block px-3 py-2 text-sm font-medium text-gray-700 rounded hover:bg-indigo-50 hover:text-indigo-600">Analytics</a>
                 <a href="{{ route('expense-periods.index') }}" class="block px-3 py-2 text-sm font-medium text-gray-700 rounded hover:bg-indigo-50 hover:text-indigo-600">Periods</a>
                 <a href="{{ route('passbooks.index') }}" class="block px-3 py-2 text-sm font-medium text-gray-700 rounded hover:bg-indigo-50 hover:text-indigo-600">Passbooks</a>
                 <a href="{{ route('paymaya.index') }}" class="block px-3 py-2 text-sm font-medium text-gray-700 rounded hover:bg-indigo-50 hover:text-indigo-600">PayMaya</a>
