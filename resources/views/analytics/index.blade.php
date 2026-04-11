@@ -396,4 +396,3 @@ new Chart(document.getElementById('dailyChart'), {
 });
 </script>
 @endpush
-@endsection
