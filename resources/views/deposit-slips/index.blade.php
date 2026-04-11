@@ -94,6 +94,9 @@
                                    class="text-indigo-600 hover:underline">
                                     {{ $sub->passbook->label() }}
                                 </a>
+                                @if($sub->passbook->branch)
+                                    <div class="text-gray-400 mt-0.5">{{ $sub->passbook->branch->name }}</div>
+                                @endif
                             @else
                                 <span class="text-gray-400">No match</span>
                             @endif
@@ -222,6 +225,7 @@
                             @endforeach
                         </select>
                         <p class="text-xs text-gray-400 mt-1">Changing this will update the passbook deposit entry.</p>
+                        <p x-show="!form.passbook_id" class="text-xs text-amber-600 mt-1">A passbook must be selected to approve this submission.</p>
                     </div>
 
                     <div class="flex justify-end gap-3 pt-2 border-t border-gray-100">
@@ -230,7 +234,11 @@
                             Cancel
                         </button>
                         <button type="submit"
-                                class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700">
+                                :disabled="!form.passbook_id"
+                                :class="form.passbook_id
+                                    ? 'bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer'
+                                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
+                                class="px-4 py-2 text-sm font-medium rounded-lg">
                             Save &amp; Approve
                         </button>
                     </div>
